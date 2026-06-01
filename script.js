@@ -3,31 +3,31 @@ const svg = document.getElementById('lines-svg');
 const container = document.getElementById('mindmap-container');
 const tooltip = document.getElementById('tooltip');
 
-// 💡 ТУТ ТВОЯ БАЗА ДАНИХ
-// Тепер це "дерево". Кожен об'єкт може мати свої 'children' (відгалудження).
+// 💡 ТУТ ТВОЯ БАЗА ДАНИХ (Деревовидна структура)
+// Кожен об'єкт може мати 'children: [...]', де ти додаєш нові відгалудження.
 const mapData = {
     text: 'Фронтир',
-    info: { "Сутність": "Зона контакту", "Період": "XVI-XVIII ст." },
+    info: { "Сутність": "Зона контакту", "Період": "XVI-XVIII ст.", "Регіон": "Україна" },
     children: [
         {
             text: 'Російська імперія',
-            info: { "Вектор": "Південна експансія", "Мета": "Вихід до моря" },
+            info: { "Вектор": "Південна експансія", "Мета": "Вихід до моря", "Дії": "Колонізація" },
             children: [
                 { 
                     text: 'Новоросія', 
-                    info: { "Статус": "Колонізація", "Рік": "1764" },
+                    info: { "Статус": "Адмін. одиниця", "Рік": "1764", "Суть": "Поділ козацьких земель" },
                     children: [] // Можна продовжувати нескінченно!
                 }
             ]
         },
         {
             text: 'Річ Посполита',
-            info: { "Проблема": "Внутрішня криза", "Вектор": "Збереження кордонів" },
+            info: { "Проблема": "Внутрішня криза", "Вектор": "Збереження кордонів", "Вплив": "Полонізація" },
             children: []
         },
         {
             text: 'Османська імперія',
-            info: { "Вектор": "Утримання Причорномор'я", "Васали": "Кримське ханство" },
+            info: { "Вектор": "Утримання Причорномор'я", "Васали": "Кримське ханство", "Мета": "Безпека кордонів" },
             children: []
         }
     ]
@@ -37,9 +37,7 @@ const distance = 250; // Відстань між вузлами
 
 // Обробка головного вузла
 rootNode.dataset.expanded = "false";
-
-// Навішуємо інформацію для таблиці на головний вузол
-setupTooltip(rootNode, mapData.info);
+setupTooltip(rootNode, mapData.info); // Навішуємо інформацію на головний вузол
 
 rootNode.addEventListener('click', (e) => {
     if (rootNode.dataset.expanded === "true") return; 
@@ -81,23 +79,22 @@ function spawnChildren(childrenArray, parentX, parentY, baseAngle, spreadAngle) 
         
         const delay = index * 0.2;
         childEl.style.animationDelay = `${delay}s`;
-        
         childEl.dataset.expanded = "false";
         
-        // Налаштовуємо таблицю при наведенні
-        setupTooltip(childEl, childData.info);
-
         container.appendChild(childEl);
         drawLine(parentX, parentY, targetX, targetY, delay);
 
-        // Клік по новому відгалудженню
+        // Налаштовуємо таблицю та пульсацію для НОВОГО блоку
+        setupTooltip(childEl, childData.info);
+
         childEl.addEventListener('click', () => {
             if (childEl.dataset.expanded === "true") return;
-            addPulseEffect(childEl);
+            
+            addPulseEffect(childEl); // Додаємо пульсацію при кліку
             childEl.dataset.expanded = "true";
             
-            // Якщо є діти, малюємо їх. Вони розходяться віялом (кут 120 градусів) від поточного напрямку
-            if (childData.children) {
+            // Якщо є діти, малюємо їх
+            if (childData.children && childData.children.length > 0) {
                 spawnChildren(childData.children, targetX, targetY, angle, 120);
             }
         });
@@ -115,17 +112,19 @@ function drawLine(x1, y1, x2, y2, delay) {
     svg.insertBefore(line, svg.firstChild);
 }
 
+// Перезапуск CSS анімації пульсації
 function addPulseEffect(element) {
     element.classList.remove('pulse');
-    void element.offsetWidth; // Магія для перезапуску CSS анімації
+    void element.offsetWidth; // Магія для перезапуску анімації
     element.classList.add('pulse');
 }
 
 // Функція для генерації таблиці при наведенні
 function setupTooltip(element, infoObj) {
-    if (!infoObj) return;
+    if (!infoObj || Object.keys(infoObj).length === 0) return;
 
     element.addEventListener('mouseenter', (e) => {
+        // Створюємо таблицю
         let tableHTML = '<table>';
         for (const [key, value] of Object.entries(infoObj)) {
             tableHTML += `<tr><th>${key}</th><td>${value}</td></tr>`;
@@ -137,9 +136,13 @@ function setupTooltip(element, infoObj) {
     });
 
     element.addEventListener('mousemove', (e) => {
-        // Таблиця рухається за курсором з невеликим відступом
-        tooltip.style.left = `${e.pageX + 15}px`;
-        tooltip.style.top = `${e.pageY + 15}px`;
+        // Отримуємо розміри tooltip для правильного позиціонування
+        const tooltipWidth = tooltip.offsetWidth;
+        const tooltipHeight = tooltip.offsetHeight;
+
+        // Позиціонуємо таблицю за курсором з відступом, щоб вона не перекривалася
+        tooltip.style.left = `${e.clientX + 20}px`;
+        tooltip.style.top = `${e.clientY + 20}px`;
     });
 
     element.addEventListener('mouseleave', () => {
