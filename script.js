@@ -382,3 +382,54 @@ window.addEventListener('resize', () => {
         autoScaleAndCenter();
     }
 });
+
+// --- ГЕНЕРАТОР ХАТИНОК ---
+// Створюємо хатинки відразу під час завантаження сторінки
+function generateHouses() {
+    // 1. Богопіль (Лівий берег) - 22 хати
+    scatterHouses('settlement-bohopil', 280, 240, 70, 22);
+    // 2. Орел (Правий верхній берег) - 50 хат
+    scatterHouses('settlement-orel', 700, 290, 100, 50);
+    // 3. Голта (Південний берег) - 30 хат
+    scatterHouses('settlement-holta', 500, 500, 80, 30);
+
+    // Додаємо подію кліку для переходу на інші сторінки
+    document.querySelectorAll('.settlement-group').forEach(group => {
+        group.addEventListener('click', function() {
+            // Отримуємо назву HTML-файлу з data-url
+            const url = this.getAttribute('data-url');
+            if (url) {
+                window.location.href = url;
+            }
+        });
+    });
+}
+
+function scatterHouses(groupId, cx, cy, radius, count) {
+    const group = document.getElementById(groupId);
+    if (!group) return;
+
+    for (let i = 0; i < count; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        // Квадратний корінь потрібен, щоб хатинки скупчувались рівномірно, а не всі в самому центрі
+        const r = Math.sqrt(Math.random()) * radius; 
+        const x = cx + Math.cos(angle) * r;
+        const y = cy + Math.sin(angle) * r;
+
+        // Використовуємо наш шаблон з HTML
+        const useEl = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+        useEl.setAttribute('href', '#tiny-house');
+        useEl.setAttribute('x', x);
+        useEl.setAttribute('y', y);
+        useEl.setAttribute('class', 'house-icon');
+
+        // Легко обертаємо кожну хатинку, щоб виглядало як природна забудова (від -20 до +20 градусів)
+        const rotation = Math.random() * 40 - 20;
+        useEl.setAttribute('transform', `rotate(${rotation} ${x} ${y})`);
+
+        group.appendChild(useEl);
+    }
+}
+
+// Запускаємо генератор відразу
+generateHouses();
