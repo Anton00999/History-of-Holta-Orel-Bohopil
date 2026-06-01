@@ -3,8 +3,6 @@ const svg = document.getElementById('lines-svg');
 const container = document.getElementById('mindmap-container');
 const tooltip = document.getElementById('tooltip');
 
-// 💡 ТУТ ТВОЯ БАЗА ДАНИХ (Деревовидна структура)
-// Кожен об'єкт може мати 'children: [...]', де ти додаєш нові відгалудження.
 const mapData = {
     text: 'Фронтир',
     info: { "Сутність": "Зона контакту", "Період": "XVI-XVIII ст.", "Регіон": "Україна" },
@@ -16,7 +14,7 @@ const mapData = {
                 { 
                     text: 'Новоросія', 
                     info: { "Статус": "Адмін. одиниця", "Рік": "1764", "Суть": "Поділ козацьких земель" },
-                    children: [] // Можна продовжувати нескінченно!
+                    children: []
                 }
             ]
         },
@@ -33,21 +31,23 @@ const mapData = {
     ]
 };
 
-const distance = 250; // Відстань між вузлами
+const distance = 250; 
 
-// Обробка головного вузла
 rootNode.dataset.expanded = "false";
-setupTooltip(rootNode, mapData.info); // Навішуємо інформацію на головний вузол
+setupTooltip(rootNode, mapData.info);
 
 rootNode.addEventListener('click', (e) => {
     if (rootNode.dataset.expanded === "true") return; 
     
-    // Ефект пульсації
     addPulseEffect(rootNode);
 
     rootNode.dataset.expanded = "true";
     rootNode.classList.remove('large');
     rootNode.classList.add('shrunk');
+
+    // Ховаємо підказку при кліку, щоб не заважала
+    tooltip.style.opacity = '0';
+    setTimeout(() => { tooltip.style.display = 'none'; }, 300);
 
     setTimeout(() => {
         const centerX = window.innerWidth / 2;
@@ -56,7 +56,6 @@ rootNode.addEventListener('click', (e) => {
     }, 800);
 });
 
-// Функція створення відгалуджень
 function spawnChildren(childrenArray, parentX, parentY, baseAngle, spreadAngle) {
     if (!childrenArray || childrenArray.length === 0) return;
 
@@ -70,7 +69,6 @@ function spawnChildren(childrenArray, parentX, parentY, baseAngle, spreadAngle) 
         const targetX = parentX + Math.cos(angleRad) * distance;
         const targetY = parentY + Math.sin(angleRad) * distance;
 
-        // Створюємо блок
         const childEl = document.createElement('div');
         childEl.className = 'node child';
         childEl.textContent = childData.text;
@@ -84,16 +82,18 @@ function spawnChildren(childrenArray, parentX, parentY, baseAngle, spreadAngle) 
         container.appendChild(childEl);
         drawLine(parentX, parentY, targetX, targetY, delay);
 
-        // Налаштовуємо таблицю та пульсацію для НОВОГО блоку
         setupTooltip(childEl, childData.info);
 
         childEl.addEventListener('click', () => {
             if (childEl.dataset.expanded === "true") return;
             
-            addPulseEffect(childEl); // Додаємо пульсацію при кліку
+            addPulseEffect(childEl);
             childEl.dataset.expanded = "true";
             
-            // Якщо є діти, малюємо їх
+            // Ховаємо підказку при кліку
+            tooltip.style.opacity = '0';
+            setTimeout(() => { tooltip.style.display = 'none'; }, 300);
+
             if (childData.children && childData.children.length > 0) {
                 spawnChildren(childData.children, targetX, targetY, angle, 120);
             }
@@ -112,14 +112,12 @@ function drawLine(x1, y1, x2, y2, delay) {
     svg.insertBefore(line, svg.firstChild);
 }
 
-// Перезапуск CSS анімації пульсації
 function addPulseEffect(element) {
     element.classList.remove('pulse');
-    void element.offsetWidth; // Магія для перезапуску анімації
+    void element.offsetWidth; 
     element.classList.add('pulse');
 }
 
-// Бронебійна функція для генерації таблиці при наведенні
 function setupTooltip(element, infoObj) {
     if (!infoObj || Object.keys(infoObj).length === 0) return;
 
@@ -131,40 +129,22 @@ function setupTooltip(element, infoObj) {
         tableHTML += '</table>';
         
         tooltip.innerHTML = tableHTML;
-        
-        // Використовуємо і display, і opacity для 100% гарантії показу
         tooltip.style.display = 'block';
+        
         setTimeout(() => {
             tooltip.style.opacity = '1';
         }, 10);
     });
 
     element.addEventListener('mousemove', (e) => {
-        // Використовуємо pageX/pageY замість clientX/clientY для точності
         tooltip.style.left = `${e.pageX + 20}px`;
         tooltip.style.top = `${e.pageY + 20}px`;
     });
 
     element.addEventListener('mouseleave', () => {
         tooltip.style.opacity = '0';
-        // Ховаємо елемент повністю після завершення анімації
         setTimeout(() => {
             tooltip.style.display = 'none';
         }, 300);
-    });
-}
-
-    element.addEventListener('mousemove', (e) => {
-        // Отримуємо розміри tooltip для правильного позиціонування
-        const tooltipWidth = tooltip.offsetWidth;
-        const tooltipHeight = tooltip.offsetHeight;
-
-        // Позиціонуємо таблицю за курсором з відступом, щоб вона не перекривалася
-        tooltip.style.left = `${e.clientX + 20}px`;
-        tooltip.style.top = `${e.clientY + 20}px`;
-    });
-
-    element.addEventListener('mouseleave', () => {
-        tooltip.style.opacity = 0;
     });
 }
