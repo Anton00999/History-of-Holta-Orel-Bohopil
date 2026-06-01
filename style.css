@@ -154,7 +154,6 @@ body.finale-water .line.russian { stroke: #d81159; filter: drop-shadow(0 0 10px 
 body.finale-water .node.ottoman { border-color: #0496ff; box-shadow: 0 0 15px rgba(4, 150, 255, 0.7); }
 body.finale-water .line.ottoman { stroke: #0496ff; filter: drop-shadow(0 0 10px rgba(4, 150, 255, 0.7)); }
 
-/* ДОДАНО: Стилі для річок */
 #rivers-container {
     position: absolute;
     top: 0;
@@ -166,7 +165,7 @@ body.finale-water .line.ottoman { stroke: #0496ff; filter: drop-shadow(0 0 10px 
     align-items: center;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 2s ease;
+    transition: opacity 3s ease; /* Дуже плавна поява з туману */
     z-index: 0;
 }
 
@@ -175,15 +174,49 @@ body.finale-water .line.ottoman { stroke: #0496ff; filter: drop-shadow(0 0 10px 
     z-index: 10;
 }
 
-/* ДОДАНО: Стилі для твого власного зображення річок */
-.custom-river-img {
-    width: 100vw;
-    height: 100vh;
-    object-fit: contain; /* Масштабує картинку так, щоб вона не обрізалась і не розплющувалась */
-    
-    /* Якщо твоя картинка просто біла, ти можеш розкоментувати рядок нижче, 
-       щоб додати їй неонове синє світіння, як було в моєму варіанті: */
-    /* filter: drop-shadow(0 0 15px rgba(4, 150, 255, 0.8)); */
+.stylized-river {
+    width: 100%;
+    height: 100%;
+}
+
+/* Колір глибини */
+.river-base {
+    fill: none;
+    stroke: #0a3d6e; 
+    stroke-width: 45;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0.6;
+}
+
+/* Основна яскрава лінія води */
+.river-current {
+    fill: none;
+    stroke: #0496ff; 
+    stroke-width: 15;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 2000;
+    stroke-dashoffset: 2000;
+    transition: stroke-dashoffset 4s cubic-bezier(0.25, 1, 0.5, 1); /* Анімація малювання */
+}
+
+/* Світлі хвилі всередині русла */
+.river-waves {
+    fill: none;
+    stroke: #8ae2ff; 
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-dasharray: 2000;
+    stroke-dashoffset: 2000;
+    /* Хвилі починають малюватися з невеликою затримкою (0.5s) */
+    transition: stroke-dashoffset 5s cubic-bezier(0.25, 1, 0.5, 1) 0.5s; 
+}
+
+/* Запуск анімації руху води */
+#rivers-container.show-rivers .river-current,
+#rivers-container.show-rivers .river-waves {
+    stroke-dashoffset: 0;
 }
 
 .tooltip {
