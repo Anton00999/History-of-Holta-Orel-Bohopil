@@ -232,7 +232,7 @@ body.finale-water .line.ottoman { stroke: #0496ff; filter: drop-shadow(0 0 10px 
 .tooltip td { color: #ccc; }
 .tooltip tr:last-child th, .tooltip tr:last-child td { border-bottom: none; }
 
-/* Інтерактивні групи поселень */
+/* --- Інтерактивні групи поселень --- */
 .settlement-group {
     cursor: pointer; opacity: 0; transition: opacity 2s ease;
 }
@@ -241,23 +241,34 @@ body.finale-water .line.ottoman { stroke: #0496ff; filter: drop-shadow(0 0 10px 
     opacity: 1; transition-delay: 2.5s; /* Хати з'являються після річок */
 }
 
+/* Налаштування для хітбокса (щоб клікалась вся зона) */
+.hitbox {
+    cursor: pointer; pointer-events: all;
+}
+
 .settlement-label {
     fill: rgba(255, 255, 255, 0.5); font-size: 32px; font-weight: bold;
     text-anchor: middle; letter-spacing: 4px; text-transform: uppercase;
-    transition: all 0.4s ease; pointer-events: none;
+    transition: all 0.4s ease; 
+    pointer-events: none; /* Текст не заважає клікати на хітбокс */
 }
 
-.house-icon { fill: rgba(255, 255, 255, 0.4); transition: all 0.4s ease; }
+.house-icon { 
+    fill: rgba(255, 255, 255, 0.4); transition: all 0.4s ease; 
+    pointer-events: none; /* Хатинки не заважають клікати на хітбокс */
+}
 
-/* Сяйво при наведенні на будь-яку частину поселення */
+/* Сяйво при наведенні на БУДЬ-ЯКУ частину зони (завдяки хітбоксу) */
 .settlement-group:hover .house-icon {
-    fill: #fff; filter: drop-shadow(0 0 6px #f9a826) drop-shadow(0 0 12px #f9a826);
+    fill: #f9a826; /* Золотий колір */
+    filter: drop-shadow(0 0 5px #f9a826);
 }
 
 .settlement-group:hover .settlement-label {
-    fill: #f9a826; filter: drop-shadow(0 0 10px rgba(249, 168, 38, 0.8)); font-size: 34px;
+    fill: #f9a826; 
+    filter: drop-shadow(0 0 10px rgba(249, 168, 38, 0.9)); 
+    font-size: 34px;
 }
-
 /* --- ТАБЛИЦЯ --- */
 .tooltip {
     position: absolute; background: rgba(10, 10, 20, 0.95); border: 2px solid #e94560; border-radius: 8px; padding: 12px;
