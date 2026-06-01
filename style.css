@@ -51,12 +51,18 @@ body, html {
     border-radius: 12px;
     border: 2px solid #e94560;
     cursor: pointer;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    transition: all 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+    transition: all 0.8s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.3s ease;
     z-index: 2;
     text-align: center;
     box-sizing: border-box;
     user-select: none;
+    backface-visibility: hidden;
+}
+
+/* Ефект наведення на прямокутник */
+.node:hover {
+    box-shadow: 0 0 20px rgba(233, 69, 96, 0.7);
+    transform: scale(1.05);
 }
 
 /* Початковий великий стан */
@@ -94,32 +100,41 @@ body, html {
         transform: scale(1);
     }
 }
-/* Анімація пульсації при кліку */
-@keyframes pulse {
-    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(233, 69, 96, 0.7); }
-    50% { transform: scale(1.1); box-shadow: 0 0 0 20px rgba(233, 69, 96, 0); }
-    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(233, 69, 96, 0); }
+
+/* --- ВИПРАВЛЕНА АНІМАЦІЯ ПУЛЬСАЦІЇ --- */
+/* Ми створюємо пульсацію не для самого блоку, а для його тіні через псевдоелемент */
+.pulse::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    border: 2px solid #e94560;
+    box-sizing: border-box;
+    animation: pulseEffect 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+    pointer-events: none;
 }
 
-.pulse {
-    animation: pulse 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+@keyframes pulseEffect {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(1.4); opacity: 0; }
 }
 
-/* Дизайн спливаючої таблиці (Tooltip) */
+/* --- ВИПРАВЛЕНИЙ ТА ПОКРАЩЕНИЙ TOOLTIP --- */
 .tooltip {
     position: absolute;
-    background: rgba(22, 33, 62, 0.95);
+    background: rgba(10, 10, 20, 0.95);
     border: 2px solid #e94560;
     border-radius: 8px;
-    padding: 10px;
+    padding: 12px;
     color: white;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     pointer-events: none; /* Щоб курсор не чіплявся за підказку */
     opacity: 0;
     transition: opacity 0.3s;
     z-index: 100;
     box-shadow: 0 10px 25px rgba(0,0,0,0.7);
-    min-width: 200px;
+    min-width: 220px;
 }
 
 .tooltip table {
@@ -131,11 +146,17 @@ body, html {
     padding: 6px 10px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     text-align: left;
+    vertical-align: top;
 }
 
 .tooltip th { 
     color: #e94560; 
     font-weight: bold;
+    width: 90px;
+}
+
+.tooltip td {
+    color: #ccc;
 }
 
 .tooltip tr:last-child th,
