@@ -1,57 +1,99 @@
 body, html {
-    margin: 0; padding: 0; width: 100%; height: 100%;
-    background-color: #1a1a2e; font-family: 'Segoe UI', Tahoma, sans-serif;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #1a1a2e; /* Темний атмосферний фон */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     overflow: hidden;
-    transition: background 2s ease; 
+    transition: background 2s ease; /* ДОДАНО: Для плавного переходу у воду */
 }
 
-/* ФІНАЛ - Ефект води на фоні */
+/* ДОДАНО: ФІНАЛ - Ефект води на фоні */
 body.finale-water {
     background-color: #0b1a2a;
     background-image: radial-gradient(circle at center, #112d4e 0%, #06111c 100%);
 }
 
 #mindmap-container {
-    position: relative; width: 100vw; height: 100vh;
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    /* ТУТ ЗМІНА: Я прибрав display: flex, бо тепер камера сама центрує об'єкти */
+    transition: transform 2.5s cubic-bezier(0.25, 1, 0.5, 1); /* ДОДАНО: для плавного обертання */
 }
 
+/* ДОДАНО: ФІНАЛ - Нахил карти на 40 градусів */
+#mindmap-container.finale-rotate {
+    transform: rotate(-40deg);
+}
+
+/* --- НОВЕ: Камера, яка наближає і віддаляє мапу --- */
 #zoom-wrapper {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    transform-origin: 0 0; 
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transform-origin: 0 0; /* Точка відліку масштабування */
     transition: transform 1s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 #lines-svg {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    overflow: visible; z-index: 1; pointer-events: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible; /* НОВЕ: щоб лінії малювалися навіть коли вони далеко за краями екрана */
+    z-index: 1;
+    pointer-events: none;
 }
 
+/* Анімація малювання ліній */
 .line {
-    stroke: #e94560; stroke-width: 3;
-    stroke-dasharray: 1000; stroke-dashoffset: 1000;
+    stroke: #e94560;
+    stroke-width: 3;
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
     animation: drawLine 1s ease forwards;
-    transition: stroke 1.5s ease, filter 1.5s ease;
+    transition: stroke 1.5s ease, filter 1.5s ease; /* ДОДАНО: для плавної зміни кольору в фіналі */
 }
 
-@keyframes drawLine { to { stroke-dashoffset: 0; } }
+@keyframes drawLine {
+    to { stroke-dashoffset: 0; }
+}
 
+/* Загальні стилі для прямокутників */
 .node {
-    position: absolute; background-color: #16213e; color: #fff;
-    display: flex; justify-content: center; align-items: center;
-    border-radius: 12px; border: 2px solid #e94560;
+    position: absolute;
+    background-color: #16213e;
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 12px;
+    border: 2px solid #e94560;
     cursor: pointer;
-    /* УВАГА: transition змінено, щоб JS міг плавно рухати координати */
+    /* ВАЖЛИВО: Прибрано "all", щоб JS міг плавно рухати гілку без гальм */
     transition: width 0.8s, height 0.8s, font-size 0.8s, opacity 0.8s, box-shadow 0.3s ease, border-color 1.5s ease, background-color 1.5s ease;
-    z-index: 2; text-align: center; box-sizing: border-box; user-select: none;
+    z-index: 2;
+    text-align: center;
+    box-sizing: border-box;
+    user-select: none;
     backface-visibility: hidden;
+    /* НОВЕ: центрування математично точно по координатах, щоб камера не хибила */
     transform: translate(-50%, -50%);
 }
 
+/* Ефект наведення на прямокутник */
 .node:hover {
     box-shadow: 0 0 20px rgba(233, 69, 96, 0.7);
+    /* ЗМІНЕНО: додано translate(-50%, -50%), щоб при наведенні блок не "стрибав" вбік */
     transform: translate(-50%, -50%) scale(1.05);
 }
 
+/* ДОДАНО: Сяйво для фронтиру, коли трикутник замкнувся */
 .golden-ready {
     box-shadow: 0 0 30px #f9a826, inset 0 0 20px #f9a826 !important;
     border-color: #fff !important;
@@ -65,29 +107,57 @@ body.finale-water {
     100% { transform: translate(-50%, -50%) scale(1); }
 }
 
+/* Початковий великий стан */
 .node.large {
-    width: 60vw; height: 40vh; font-size: 5rem; font-weight: bold;
-    letter-spacing: 5px; text-transform: uppercase;
+    width: 60vw;
+    height: 40vh;
+    font-size: 5rem;
+    font-weight: bold;
+    letter-spacing: 5px;
+    text-transform: uppercase;
 }
 
+/* Зменшений стан після кліку */
 .node.shrunk {
-    width: 200px; height: 80px; font-size: 1.5rem; font-weight: bold; cursor: default;
+    width: 200px;
+    height: 80px;
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: default;
 }
 
+/* Стилі для нових відгалуджень */
 .node.child {
-    width: 220px; height: 70px; font-size: 1.1rem; opacity: 0;
+    width: 220px;
+    height: 70px;
+    font-size: 1.1rem;
+    opacity: 0;
+    /* ЗМІНЕНО: scale(0) додано до translate */
     transform: translate(-50%, -50%) scale(0);
     animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
 @keyframes popIn {
-    to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    to {
+        opacity: 1;
+        /* ЗМІНЕНО: кінцевий стан анімації */
+        transform: translate(-50%, -50%) scale(1);
+    }
 }
 
+/* --- ВИПРАВЛЕНА АНІМАЦІЯ ПУЛЬСАЦІЇ --- */
 .pulse::after {
-    content: ''; position: absolute; top: -2px; left: -2px; right: -2px; bottom: -2px;
-    border-radius: inherit; border: 2px solid inherit; box-sizing: border-box;
-    animation: pulseEffect 0.6s cubic-bezier(0.25, 1, 0.5, 1); pointer-events: none;
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    border: 2px solid #e94560;
+    box-sizing: border-box;
+    animation: pulseEffect 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+    pointer-events: none;
 }
 
 @keyframes pulseEffect {
@@ -95,26 +165,75 @@ body.finale-water {
     100% { transform: scale(1.4); opacity: 0; }
 }
 
-/* ФІНАЛ - Кольори (Ліва/Річ Посполита - Золото, ПраваВерхня/Росія - Малиновий, Нижня/Османи - Синій) */
-body.finale-water .node.polish { border-color: #cca43b; box-shadow: 0 0 15px rgba(204, 164, 59, 0.7); }
-body.finale-water .line.polish { stroke: #cca43b; filter: drop-shadow(0 0 10px rgba(204, 164, 59, 0.7)); }
-
-body.finale-water .node.russian { border-color: #d81159; box-shadow: 0 0 15px rgba(216, 17, 89, 0.7); }
-body.finale-water .line.russian { stroke: #d81159; filter: drop-shadow(0 0 10px rgba(216, 17, 89, 0.7)); }
-
-body.finale-water .node.ottoman { border-color: #0496ff; box-shadow: 0 0 15px rgba(4, 150, 255, 0.7); }
-body.finale-water .line.ottoman { stroke: #0496ff; filter: drop-shadow(0 0 10px rgba(4, 150, 255, 0.7)); }
-
-/* Таблиця підказки */
-.tooltip {
-    position: absolute; background: rgba(10, 10, 20, 0.95);
-    border: 2px solid #e94560; border-radius: 8px; padding: 12px;
-    color: white; font-size: 0.95rem; pointer-events: none; 
-    opacity: 0; display: none; transition: opacity 0.3s;
-    z-index: 100; box-shadow: 0 10px 25px rgba(0,0,0,0.7); min-width: 220px;
+/* ДОДАНО: ФІНАЛ - Забарвлення гілок після натискання на Фронтир */
+body.finale-water .node.polish { 
+    border-color: #cca43b; 
+    box-shadow: 0 0 15px rgba(204, 164, 59, 0.7); 
 }
-.tooltip table { border-collapse: collapse; width: 100%; }
-.tooltip th, .tooltip td { padding: 6px 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); text-align: left; vertical-align: top; }
-.tooltip th { color: #e94560; font-weight: bold; width: 90px; }
-.tooltip td { color: #ccc; }
-.tooltip tr:last-child th, .tooltip tr:last-child td { border-bottom: none; }
+body.finale-water .line.polish { 
+    stroke: #cca43b; 
+    filter: drop-shadow(0 0 10px rgba(204, 164, 59, 0.7)); 
+}
+
+body.finale-water .node.russian { 
+    border-color: #d81159; 
+    box-shadow: 0 0 15px rgba(216, 17, 89, 0.7); 
+}
+body.finale-water .line.russian { 
+    stroke: #d81159; 
+    filter: drop-shadow(0 0 10px rgba(216, 17, 89, 0.7)); 
+}
+
+body.finale-water .node.ottoman { 
+    border-color: #0496ff; 
+    box-shadow: 0 0 15px rgba(4, 150, 255, 0.7); 
+}
+body.finale-water .line.ottoman { 
+    stroke: #0496ff; 
+    filter: drop-shadow(0 0 10px rgba(4, 150, 255, 0.7)); 
+}
+
+/* --- ВИПРАВЛЕНИЙ ТА ПОКРАЩЕНИЙ TOOLTIP --- */
+.tooltip {
+    position: absolute;
+    background: rgba(10, 10, 20, 0.95);
+    border: 2px solid #e94560;
+    border-radius: 8px;
+    padding: 12px;
+    color: white;
+    font-size: 0.95rem;
+    pointer-events: none; 
+    opacity: 0;
+    display: none;
+    transition: opacity 0.3s;
+    z-index: 100;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.7);
+    min-width: 220px;
+}
+
+.tooltip table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.tooltip th, .tooltip td {
+    padding: 6px 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: left;
+    vertical-align: top;
+}
+
+.tooltip th { 
+    color: #e94560; 
+    font-weight: bold;
+    width: 90px;
+}
+
+.tooltip td {
+    color: #ccc;
+}
+
+.tooltip tr:last-child th,
+.tooltip tr:last-child td {
+    border-bottom: none;
+}
