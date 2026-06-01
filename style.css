@@ -243,7 +243,13 @@ body.finale-water .line.ottoman { stroke: #0496ff; filter: drop-shadow(0 0 10px 
 
 /* Налаштування для хітбокса (щоб клікалась вся зона) */
 .hitbox {
-    cursor: pointer; pointer-events: all;
+    cursor: pointer; 
+    pointer-events: none; /* ЗМІНЕНО: Відключаємо кліки, поки мапа не зникне */
+}
+
+/* ДОДАНО: Вмикаємо можливість клікати ТІЛЬКИ тоді, коли з'явились річки */
+#rivers-container.show-rivers .hitbox {
+    pointer-events: all; 
 }
 
 .settlement-label {
