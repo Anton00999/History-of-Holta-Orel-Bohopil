@@ -384,19 +384,19 @@ window.addEventListener('resize', () => {
 });
 
 // --- ГЕНЕРАТОР ХАТИНОК ---
-// Створюємо хатинки відразу під час завантаження сторінки
 function generateHouses() {
-    // 1. Богопіль (Лівий берег) - 22 хати
-    scatterHouses('settlement-bohopil', 280, 240, 70, 22);
-    // 2. Орел (Правий верхній берег) - 50 хат
-    scatterHouses('settlement-orel', 700, 290, 100, 50);
-    // 3. Голта (Південний берег) - 30 хат
-    scatterHouses('settlement-holta', 500, 500, 80, 30);
+    // 1. Богопіль: перенесено між річками, ближче до устя (центр 380,360), радіус зменшено до 35
+    scatterHouses('settlement-bohopil', 380, 360, 35, 22);
+    
+    // 2. Орел: перенесено на правий берег ближче до злиття (центр 580,320), радіус зменшено до 45
+    scatterHouses('settlement-orel', 580, 320, 45, 50);
+    
+    // 3. Голта: підтягнуто трохи вище до річки (центр 510,460), радіус зменшено до 35
+    scatterHouses('settlement-holta', 510, 460, 35, 30);
 
     // Додаємо подію кліку для переходу на інші сторінки
     document.querySelectorAll('.settlement-group').forEach(group => {
         group.addEventListener('click', function() {
-            // Отримуємо назву HTML-файлу з data-url
             const url = this.getAttribute('data-url');
             if (url) {
                 window.location.href = url;
