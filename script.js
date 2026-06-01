@@ -119,12 +119,11 @@ function addPulseEffect(element) {
     element.classList.add('pulse');
 }
 
-// Функція для генерації таблиці при наведенні
+// Бронебійна функція для генерації таблиці при наведенні
 function setupTooltip(element, infoObj) {
     if (!infoObj || Object.keys(infoObj).length === 0) return;
 
     element.addEventListener('mouseenter', (e) => {
-        // Створюємо таблицю
         let tableHTML = '<table>';
         for (const [key, value] of Object.entries(infoObj)) {
             tableHTML += `<tr><th>${key}</th><td>${value}</td></tr>`;
@@ -132,8 +131,28 @@ function setupTooltip(element, infoObj) {
         tableHTML += '</table>';
         
         tooltip.innerHTML = tableHTML;
-        tooltip.style.opacity = 1;
+        
+        // Використовуємо і display, і opacity для 100% гарантії показу
+        tooltip.style.display = 'block';
+        setTimeout(() => {
+            tooltip.style.opacity = '1';
+        }, 10);
     });
+
+    element.addEventListener('mousemove', (e) => {
+        // Використовуємо pageX/pageY замість clientX/clientY для точності
+        tooltip.style.left = `${e.pageX + 20}px`;
+        tooltip.style.top = `${e.pageY + 20}px`;
+    });
+
+    element.addEventListener('mouseleave', () => {
+        tooltip.style.opacity = '0';
+        // Ховаємо елемент повністю після завершення анімації
+        setTimeout(() => {
+            tooltip.style.display = 'none';
+        }, 300);
+    });
+}
 
     element.addEventListener('mousemove', (e) => {
         // Отримуємо розміри tooltip для правильного позиціонування
