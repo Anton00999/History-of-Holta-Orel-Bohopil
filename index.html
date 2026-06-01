@@ -26,14 +26,24 @@
                     <feGaussianBlur stdDeviation="12" result="blur" />
                     <feComposite in="SourceGraphic" in2="blur" operator="over" />
                 </filter>
+                
+                <path id="tiny-house" d="M0,-5 L5,0 L5,6 L-5,6 L-5,0 Z" />
             </defs>
 
             <g filter="url(#waterGlow)">
                 <path class="river-base" d="M 50,100 C 300,200 400,350 500,400 C 600,450 750,550 900,650 M 150,600 C 250,450 350,420 500,400" />
-                
                 <path class="river-current" d="M 50,100 C 300,200 400,350 500,400 C 600,450 750,550 900,650 M 150,600 C 250,450 350,420 500,400" />
-                
                 <path class="river-waves" d="M 100,125 C 200,165 250,185 300,220 M 350,270 C 400,320 450,350 480,370 M 550,430 C 650,480 750,530 850,610 M 200,530 C 250,460 300,440 380,420 M 600,470 C 650,500 700,540 800,600 M 150,140 C 250,190 300,220 350,260" />
+            </g>
+
+            <g id="settlement-bohopil" class="settlement-group" data-url="bohopil.html">
+                <text x="280" y="180" class="settlement-label">Богопіль</text>
+            </g>
+            <g id="settlement-orel" class="settlement-group" data-url="orel.html">
+                <text x="700" y="220" class="settlement-label">Орел</text>
+            </g>
+            <g id="settlement-holta" class="settlement-group" data-url="holta.html">
+                <text x="500" y="580" class="settlement-label">Голта</text>
             </g>
         </svg>
     </div>
