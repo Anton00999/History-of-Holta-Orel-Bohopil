@@ -8,6 +8,7 @@ let tooltipTimeout;
 let terminalNodes = []; 
 let terminalLinks = []; 
 let openedTerminalsCount = 0; 
+let finaleTriggered = false; // ДОДАНО: щоб таймер не запустився двічі
 
 const mapData = {
     text: 'Фронтир',
@@ -195,7 +196,6 @@ function animateTilt(timestamp) {
         updateBranchPositions(mainBranch, centerX, centerY, offset);
     });
 
-    // Оновлюємо золоті лінії трикутника та ПЕРЕРАХОВУЄМО їхню довжину
     terminalLinks.forEach(link => {
         const x1 = link.nodeA.currentX;
         const y1 = link.nodeA.currentY;
@@ -207,7 +207,6 @@ function animateTilt(timestamp) {
         link.lineEl.setAttribute('x2', x2);
         link.lineEl.setAttribute('y2', y2);
 
-        // ОСЬ ВИПРАВЛЕННЯ: Динамічно змінюємо довжину лінії під час розтягування
         const newLength = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
         link.lineEl.style.strokeDasharray = newLength;
     });
@@ -216,6 +215,21 @@ function animateTilt(timestamp) {
         requestAnimationFrame(animateTilt);
     } else {
         autoScaleAndCenter(); 
+
+        // ДОДАНО: Таймер на 5 секунд після якого мапа розсіюється
+        if (!finaleTriggered) {
+            finaleTriggered = true;
+            setTimeout(() => {
+                // 1. Розмиваємо і ховаємо мапу
+                container.classList.add('fade-out-map');
+                
+                // 2. Показуємо і промальовуємо річки
+                setTimeout(() => {
+                    document.getElementById('rivers-container').classList.add('show-rivers');
+                }, 1000); // Невелика затримка, щоб почати малювати, коли мапа вже трохи зникла
+
+            }, 5000);
+        }
     }
 }
 
