@@ -231,3 +231,41 @@ body.finale-water .line.ottoman { stroke: #0496ff; filter: drop-shadow(0 0 10px 
 .tooltip th { color: #e94560; font-weight: bold; width: 90px; }
 .tooltip td { color: #ccc; }
 .tooltip tr:last-child th, .tooltip tr:last-child td { border-bottom: none; }
+
+/* Інтерактивні групи поселень */
+.settlement-group {
+    cursor: pointer; opacity: 0; transition: opacity 2s ease;
+}
+
+#rivers-container.show-rivers .settlement-group {
+    opacity: 1; transition-delay: 2.5s; /* Хати з'являються після річок */
+}
+
+.settlement-label {
+    fill: rgba(255, 255, 255, 0.5); font-size: 32px; font-weight: bold;
+    text-anchor: middle; letter-spacing: 4px; text-transform: uppercase;
+    transition: all 0.4s ease; pointer-events: none;
+}
+
+.house-icon { fill: rgba(255, 255, 255, 0.4); transition: all 0.4s ease; }
+
+/* Сяйво при наведенні на будь-яку частину поселення */
+.settlement-group:hover .house-icon {
+    fill: #fff; filter: drop-shadow(0 0 6px #f9a826) drop-shadow(0 0 12px #f9a826);
+}
+
+.settlement-group:hover .settlement-label {
+    fill: #f9a826; filter: drop-shadow(0 0 10px rgba(249, 168, 38, 0.8)); font-size: 34px;
+}
+
+/* --- ТАБЛИЦЯ --- */
+.tooltip {
+    position: absolute; background: rgba(10, 10, 20, 0.95); border: 2px solid #e94560; border-radius: 8px; padding: 12px;
+    color: white; font-size: 0.95rem; pointer-events: none; opacity: 0; display: none; transition: opacity 0.3s;
+    z-index: 100; box-shadow: 0 10px 25px rgba(0,0,0,0.7); min-width: 220px;
+}
+.tooltip table { border-collapse: collapse; width: 100%; }
+.tooltip th, .tooltip td { padding: 6px 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); text-align: left; vertical-align: top; }
+.tooltip th { color: #e94560; font-weight: bold; width: 90px; }
+.tooltip td { color: #ccc; }
+.tooltip tr:last-child th, .tooltip tr:last-child td { border-bottom: none; }
