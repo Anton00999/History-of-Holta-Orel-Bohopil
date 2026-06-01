@@ -1,7 +1,10 @@
 const rootNode = document.getElementById('root-node');
 const svg = document.getElementById('lines-svg');
 const container = document.getElementById('mindmap-container');
+const zoomWrapper = document.getElementById('zoom-wrapper');
 const tooltip = document.getElementById('tooltip');
+
+let tooltipTimeout; // Глобальна змінна для контролю таймера підказки
 
 const mapData = {
     text: 'Фронтир',
@@ -31,8 +34,11 @@ const mapData = {
     ]
 };
 
-const distance = 250; 
+const distance = 300; 
 
+// Ініціалізація головного вузла (жорстке центрування координатами)
+rootNode.style.left = `${window.innerWidth / 2}px`;
+rootNode.style.top = `${window.innerHeight / 2}px`;
 rootNode.dataset.expanded = "false";
 setupTooltip(rootNode, mapData.info);
 
@@ -40,18 +46,15 @@ rootNode.addEventListener('click', (e) => {
     if (rootNode.dataset.expanded === "true") return; 
     
     addPulseEffect(rootNode);
-
     rootNode.dataset.expanded = "true";
     rootNode.classList.remove('large');
     rootNode.classList.add('shrunk');
 
-    // Ховаємо підказку при кліку, щоб не заважала
-    tooltip.style.opacity = '0';
-    setTimeout(() => { tooltip.style.display = 'none'; }, 300);
+    hideTooltipInstantly();
 
     setTimeout(() => {
-        const centerX = window.innerWidth / 2;
-        const centerY = window.innerHeight / 2;
+        const centerX = parseFloat(rootNode.style.left);
+        const centerY = parseFloat(rootNode.style.top);
         spawnChildren(mapData.children, centerX, centerY, -90, 360);
     }, 800);
 });
@@ -72,14 +75,16 @@ function spawnChildren(childrenArray, parentX, parentY, baseAngle, spreadAngle) 
         const childEl = document.createElement('div');
         childEl.className = 'node child';
         childEl.textContent = childData.text;
-        childEl.style.left = `${targetX - 110}px`;
-        childEl.style.top = `${targetY - 35}px`;
+        
+        // Позиціонуємо центр елемента
+        childEl.style.left = `${targetX}px`;
+        childEl.style.top = `${targetY}px`;
         
         const delay = index * 0.2;
         childEl.style.animationDelay = `${delay}s`;
         childEl.dataset.expanded = "false";
         
-        container.appendChild(childEl);
+        zoomWrapper.appendChild(childEl);
         drawLine(parentX, parentY, targetX, targetY, delay);
 
         setupTooltip(childEl, childData.info);
@@ -89,16 +94,16 @@ function spawnChildren(childrenArray, parentX, parentY, baseAngle, spreadAngle) 
             
             addPulseEffect(childEl);
             childEl.dataset.expanded = "true";
-            
-            // Ховаємо підказку при кліку
-            tooltip.style.opacity = '0';
-            setTimeout(() => { tooltip.style.display = 'none'; }, 300);
+            hideTooltipInstantly();
 
             if (childData.children && childData.children.length > 0) {
                 spawnChildren(childData.children, targetX, targetY, angle, 120);
             }
         });
     });
+
+    // Після того, як вузли додано, викликаємо функцію автомасштабування
+    setTimeout(autoScaleAndCenter, 300);
 }
 
 function drawLine(x1, y1, x2, y2, delay) {
@@ -118,10 +123,19 @@ function addPulseEffect(element) {
     element.classList.add('pulse');
 }
 
+// Функція для приховування підказки під час кліку
+function hideTooltipInstantly() {
+    clearTimeout(tooltipTimeout);
+    tooltip.style.opacity = '0';
+    tooltip.style.display = 'none';
+}
+
 function setupTooltip(element, infoObj) {
     if (!infoObj || Object.keys(infoObj).length === 0) return;
 
     element.addEventListener('mouseenter', (e) => {
+        clearTimeout(tooltipTimeout); // Скасовуємо старе зникнення, якщо швидко перевели мишу
+        
         let tableHTML = '<table>';
         for (const [key, value] of Object.entries(infoObj)) {
             tableHTML += `<tr><th>${key}</th><td>${value}</td></tr>`;
@@ -131,20 +145,89 @@ function setupTooltip(element, infoObj) {
         tooltip.innerHTML = tableHTML;
         tooltip.style.display = 'block';
         
-        setTimeout(() => {
-            tooltip.style.opacity = '1';
-        }, 10);
+        setTimeout(() => { tooltip.style.opacity = '1'; }, 10);
     });
 
     element.addEventListener('mousemove', (e) => {
-        tooltip.style.left = `${e.pageX + 20}px`;
-        tooltip.style.top = `${e.pageY + 20}px`;
+        const cx = window.innerWidth / 2;
+        const cy = window.innerHeight / 2;
+        const offset = 20;
+        
+        let left, top;
+
+        // "Розумне" позиціонування: завжди всередину екрана
+        if (e.clientX <= cx) {
+            left = e.clientX + offset; // Курсор зліва -> показуємо справа
+        } else {
+            left = e.clientX - tooltip.offsetWidth - offset; // Курсор справа -> показуємо зліва
+        }
+
+        if (e.clientY <= cy) {
+            top = e.clientY + offset; // Курсор зверху -> показуємо знизу
+        } else {
+            top = e.clientY - tooltip.offsetHeight - offset; // Курсор знизу -> показуємо зверху
+        }
+
+        tooltip.style.left = `${left}px`;
+        tooltip.style.top = `${top}px`;
     });
 
     element.addEventListener('mouseleave', () => {
         tooltip.style.opacity = '0';
-        setTimeout(() => {
+        tooltipTimeout = setTimeout(() => {
             tooltip.style.display = 'none';
-        }, 300);
+        }, 200); // Зникнення стало швидшим (200мс)
     });
 }
+
+// 📸 МАТЕМАТИКА КАМЕРИ: Автоматичне масштабування та центрування
+function autoScaleAndCenter() {
+    const nodes = document.querySelectorAll('.node');
+    let minX = Infinity, maxX = -Infinity;
+    let minY = Infinity, maxY = -Infinity;
+
+    // Знаходимо крайні точки всього дерева
+    nodes.forEach(node => {
+        const left = parseFloat(node.style.left);
+        const top = parseFloat(node.style.top);
+        
+        const halfW = 110; // Половина ширини звичайного блоку
+        const halfH = 40;  // Половина висоти звичайного блоку
+
+        if (left - halfW < minX) minX = left - halfW;
+        if (left + halfW > maxX) maxX = left + halfW;
+        if (top - halfH < minY) minY = top - halfH;
+        if (top + halfH > maxY) maxY = top + halfH;
+    });
+
+    const bboxWidth = maxX - minX;
+    const bboxHeight = maxY - minY;
+    const bboxCenterX = minX + bboxWidth / 2;
+    const bboxCenterY = minY + bboxHeight / 2;
+
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    // Відступи по краях екрана (щоб мапа не прилипала до рамки)
+    const padding = 150; 
+    const scaleX = (viewportWidth - padding) / bboxWidth;
+    const scaleY = (viewportHeight - padding) / bboxHeight;
+    
+    // Масштабуємо, але не збільшуємо більше ніж на оригінальний розмір (scale: 1)
+    let scale = Math.min(scaleX, scaleY, 1); 
+    if (!isFinite(scale) || scale <= 0) scale = 1;
+
+    // Розраховуємо, на скільки треба змістити полотно, щоб центр мапи опинився в центрі екрана
+    const translateX = (viewportWidth / 2) - (bboxCenterX * scale);
+    const translateY = (viewportHeight / 2) - (bboxCenterY * scale);
+
+    // Плавно переміщуємо камеру
+    zoomWrapper.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+}
+
+// Додатково центруємо при зміні розміру вікна браузера
+window.addEventListener('resize', () => {
+    if (rootNode.dataset.expanded === "true") {
+        autoScaleAndCenter();
+    }
+});
