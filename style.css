@@ -12,9 +12,18 @@ body, html {
     position: relative;
     width: 100vw;
     height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    /* ТУТ ЗМІНА: Я прибрав display: flex, бо тепер камера сама центрує об'єкти */
+}
+
+/* --- НОВЕ: Камера, яка наближає і віддаляє мапу --- */
+#zoom-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transform-origin: 0 0; /* Точка відліку масштабування */
+    transition: transform 1s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 #lines-svg {
@@ -23,6 +32,7 @@ body, html {
     left: 0;
     width: 100%;
     height: 100%;
+    overflow: visible; /* НОВЕ: щоб лінії малювалися навіть коли вони далеко за краями екрана */
     z-index: 1;
     pointer-events: none;
 }
@@ -57,12 +67,15 @@ body, html {
     box-sizing: border-box;
     user-select: none;
     backface-visibility: hidden;
+    /* НОВЕ: центрування математично точно по координатах, щоб камера не хибила */
+    transform: translate(-50%, -50%);
 }
 
 /* Ефект наведення на прямокутник */
 .node:hover {
     box-shadow: 0 0 20px rgba(233, 69, 96, 0.7);
-    transform: scale(1.05);
+    /* ЗМІНЕНО: додано translate(-50%, -50%), щоб при наведенні блок не "стрибав" вбік */
+    transform: translate(-50%, -50%) scale(1.05);
 }
 
 /* Початковий великий стан */
@@ -90,22 +103,25 @@ body, html {
     height: 70px;
     font-size: 1.1rem;
     opacity: 0;
-    transform: scale(0);
+    /* ЗМІНЕНО: scale(0) додано до translate */
+    transform: translate(-50%, -50%) scale(0);
     animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
 @keyframes popIn {
     to {
         opacity: 1;
-        transform: scale(1);
+        /* ЗМІНЕНО: кінцевий стан анімації */
+        transform: translate(-50%, -50%) scale(1);
     }
 }
 
 /* --- ВИПРАВЛЕНА АНІМАЦІЯ ПУЛЬСАЦІЇ --- */
-/* Ми створюємо пульсацію не для самого блоку, а для його тіні через псевдоелемент */
 .pulse::after {
     content: '';
     position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
     border-radius: inherit;
@@ -129,7 +145,7 @@ body, html {
     padding: 12px;
     color: white;
     font-size: 0.95rem;
-    pointer-events: none; /* Щоб курсор не чіплявся за підказку */
+    pointer-events: none; 
     opacity: 0;
     display: none;
     transition: opacity 0.3s;
