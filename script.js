@@ -5,61 +5,53 @@ const zoomWrapper = document.getElementById('zoom-wrapper');
 const tooltip = document.getElementById('tooltip');
 
 let tooltipTimeout; 
+let terminalNodes = []; // Масив для кінцевих точок
+let openedTerminalsCount = 0; // Лічильник відкритих кінцевих точок
 
-// Масив для збереження координат кінцевих точок (для трикутника)
-let terminalNodes = [];
-
+// 💡 Зверни увагу: я змінив порядок на Річ Посполита -> Росія -> Османи
+// Це потрібно, щоб після повороту на -40 градусів вони лягли точно за географією Первомайська!
 const mapData = {
     text: 'Фронтир',
     info: { "Сутність": "Зона контакту", "Період": "XVI-XVIII ст.", "Регіон": "Україна" },
     children: [
         {
-            text: 'Російська імперія',
-            info: { "Вектор": "Південна експансія", "Мета": "Вихід до моря", "Дії": "Колонізація" },
-            children: [
-                { 
-                    text: 'Новослобідський полк', 
-                    info: { "Статус": "Адмін. одиниця" },
-                    children: [
-                        {
-                           text: 'Орел', 
-                           info: { "Слобода, центр сотні": "Заснований 1757-го року Василем Черніченко" },
-                           children: []
-                        }
-                    ]
-                }
-            ]
-        },
-        {
             text: 'Річ Посполита',
+            theme: 'polish', // Альтернативний золотий
             info: { "Проблема": "Внутрішня криза", "Вектор": "Збереження кордонів", "Вплив": "Полонізація" },
             children: [
                 { 
                     text: 'Брацлавське воєводство', 
                     info: { "Статус": "Адмін. одиниця" },
                     children: [
-                        {
-                           text: 'Богопіль', 
-                           info: { "Маєток Станіслава Потоцького": "Закладений 1763-го року" },
-                           children: []
-                        }
+                        { text: 'Богопіль', info: { "Маєток": "Закладений 1763-го року" }, children: [] }
+                    ]
+                }
+            ]
+        },
+        {
+            text: 'Російська імперія',
+            theme: 'russian', // Малиновий
+            info: { "Вектор": "Південна експансія", "Мета": "Вихід до моря", "Дії": "Колонізація" },
+            children: [
+                { 
+                    text: 'Новослобідський полк', 
+                    info: { "Статус": "Адмін. одиниця" },
+                    children: [
+                        { text: 'Орел', info: { "Слобода": "Заснований 1757-го року" }, children: [] }
                     ]
                 }
             ]
         },
         {
             text: 'Османська імперія',
+            theme: 'ottoman', // Синій
             info: { "Вектор": "Утримання Причорномор'я", "Васали": "Кримське ханство", "Мета": "Безпека кордонів" },
             children: [
                 { 
                     text: 'Ханська Україна', 
                     info: { "Статус": "Адмін. одиниця" },
                     children: [
-                        {
-                           text: 'Голта', 
-                           info: { "Ханська слобода": "Заснована 1762-го року" },
-                           children: []
-                        }
+                        { text: 'Голта', info: { "Ханська слобода": "Заснована 1762-го року" }, children: [] }
                     ]
                 }
             ]
@@ -75,23 +67,35 @@ rootNode.dataset.expanded = "false";
 setupTooltip(rootNode, mapData.info);
 
 rootNode.addEventListener('click', (e) => {
+    // ЛОГІКА ДРУГОГО КЛІКУ (ФІНАЛ)
+    if (rootNode.dataset.state === "ready-for-finale") {
+        addPulseEffect(rootNode);
+        rootNode.classList.remove('golden-ready');
+        rootNode.dataset.state = "finished";
+
+        // Запускаємо перетворення карти (поворот + вода + кольори)
+        document.body.classList.add('finale-water');
+        container.classList.add('finale-rotate');
+        return;
+    }
+
     if (rootNode.dataset.expanded === "true") return; 
     
     addPulseEffect(rootNode);
     rootNode.dataset.expanded = "true";
     rootNode.classList.remove('large');
     rootNode.classList.add('shrunk');
-
     hideTooltipInstantly();
 
     setTimeout(() => {
         const centerX = parseFloat(rootNode.style.left);
         const centerY = parseFloat(rootNode.style.top);
-        spawnChildren(mapData.children, centerX, centerY, -90, 360);
+        // Передаємо null як стартову тему
+        spawnChildren(mapData.children, centerX, centerY, -90, 360, null);
     }, 800);
 });
 
-function spawnChildren(childrenArray, parentX, parentY, baseAngle, spreadAngle) {
+function spawnChildren(childrenArray, parentX, parentY, baseAngle, spreadAngle, parentTheme) {
     if (!childrenArray || childrenArray.length === 0) return;
 
     const angleStep = spreadAngle / childrenArray.length;
@@ -104,10 +108,14 @@ function spawnChildren(childrenArray, parentX, parentY, baseAngle, spreadAngle) 
         const targetX = parentX + Math.cos(angleRad) * distance;
         const targetY = parentY + Math.sin(angleRad) * distance;
 
+        // Визначаємо тему для цієї гілки (малинова, синя або золота)
+        const currentTheme = childData.theme || parentTheme;
+
         const childEl = document.createElement('div');
         childEl.className = 'node child';
-        childEl.textContent = childData.text;
+        if (currentTheme) childEl.classList.add(currentTheme); // Додаємо клас кольору
         
+        childEl.textContent = childData.text;
         childEl.style.left = `${targetX}px`;
         childEl.style.top = `${targetY}px`;
         
@@ -117,22 +125,32 @@ function spawnChildren(childrenArray, parentX, parentY, baseAngle, spreadAngle) 
         
         zoomWrapper.appendChild(childEl);
         
-        // Малюємо звичайну лінію до батька
-        drawLine(parentX, parentY, targetX, targetY, delay, false);
+        // Малюємо лінію і передаємо їй кольорову тему
+        const mainLine = drawLine(parentX, parentY, targetX, targetY, delay, false);
+        if (currentTheme) mainLine.classList.add(currentTheme);
 
         setupTooltip(childEl, childData.info);
 
-        // --- ЛОГІКА ФІНАЛЬНОГО ТРИКУТНИКА ---
-        // Якщо це кінцевий вузол (немає дітей), додаємо його в масив і малюємо зв'язки
+        // Якщо це кінцевий вузол (Голта, Орел, Богопіль)
         if (!childData.children || childData.children.length === 0) {
+            openedTerminalsCount++;
             terminalNodes.push({ x: targetX, y: targetY });
             
             if (terminalNodes.length > 1) {
-                // З'єднуємо з усіма попередніми кінцевими вузлами
+                // Малюємо трикутник
                 terminalNodes.slice(0, -1).forEach(prevNode => {
-                    // Затримка трохи більша, щоб лінія малювалася після появи самого блоку
-                    drawLine(prevNode.x, prevNode.y, targetX, targetY, delay + 0.6, true);
+                    const gLine = drawLine(prevNode.x, prevNode.y, targetX, targetY, delay + 0.6, true);
+                    gLine.classList.add(currentTheme); // Лінія перейме колір вузла
+                    gLine.classList.add('golden');
                 });
+            }
+
+            // Якщо відкрито всі 3 міста — готуємо фінал
+            if (openedTerminalsCount === 3) {
+                setTimeout(() => {
+                    rootNode.classList.add('golden-ready');
+                    rootNode.dataset.state = "ready-for-finale";
+                }, 2000); // Чекаємо, поки домалюються золоті лінії
             }
         }
 
@@ -144,7 +162,8 @@ function spawnChildren(childrenArray, parentX, parentY, baseAngle, spreadAngle) 
             hideTooltipInstantly();
 
             if (childData.children && childData.children.length > 0) {
-                spawnChildren(childData.children, targetX, targetY, angle, 120);
+                // Передаємо тему дітям
+                spawnChildren(childData.children, targetX, targetY, angle, 120, currentTheme);
             }
         });
     });
@@ -152,7 +171,6 @@ function spawnChildren(childrenArray, parentX, parentY, baseAngle, spreadAngle) 
     setTimeout(autoScaleAndCenter, 300);
 }
 
-// Оновлена функція малювання ліній (підтримує товсті золоті лінії)
 function drawLine(x1, y1, x2, y2, delay, isThick = false) {
     const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
     line.setAttribute('x1', x1);
@@ -161,21 +179,20 @@ function drawLine(x1, y1, x2, y2, delay, isThick = false) {
     line.setAttribute('y2', y2);
     line.setAttribute('class', 'line');
     
-    // Вираховуємо точну довжину для ідеальної CSS-анімації
     const length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
     line.style.strokeDasharray = length;
     line.style.strokeDashoffset = length;
 
     if (isThick) {
         line.style.strokeWidth = '5px';
-        line.style.stroke = '#f9a826'; // Золотий колір
-        line.style.filter = 'drop-shadow(0 0 10px rgba(249, 168, 38, 0.7))'; // Ефект світіння
+        line.style.stroke = '#f9a826'; 
+        line.style.filter = 'drop-shadow(0 0 10px rgba(249, 168, 38, 0.7))';
     }
 
     line.style.animationDelay = `${delay}s`;
-    
-    // Вставляємо на початок, щоб лінії були під прямокутниками
     svg.insertBefore(line, svg.firstChild);
+    
+    return line; // Повертаємо лінію, щоб навісити кольорові класи
 }
 
 function addPulseEffect(element) {
@@ -215,17 +232,11 @@ function setupTooltip(element, infoObj) {
         
         let left, top;
 
-        if (e.clientX <= cx) {
-            left = e.clientX + offset; 
-        } else {
-            left = e.clientX - tooltip.offsetWidth - offset; 
-        }
+        if (e.clientX <= cx) { left = e.clientX + offset; } 
+        else { left = e.clientX - tooltip.offsetWidth - offset; }
 
-        if (e.clientY <= cy) {
-            top = e.clientY + offset; 
-        } else {
-            top = e.clientY - tooltip.offsetHeight - offset; 
-        }
+        if (e.clientY <= cy) { top = e.clientY + offset; } 
+        else { top = e.clientY - tooltip.offsetHeight - offset; }
 
         tooltip.style.left = `${left}px`;
         tooltip.style.top = `${top}px`;
@@ -233,9 +244,7 @@ function setupTooltip(element, infoObj) {
 
     element.addEventListener('mouseleave', () => {
         tooltip.style.opacity = '0';
-        tooltipTimeout = setTimeout(() => {
-            tooltip.style.display = 'none';
-        }, 200); 
+        tooltipTimeout = setTimeout(() => { tooltip.style.display = 'none'; }, 200); 
     });
 }
 
@@ -247,7 +256,6 @@ function autoScaleAndCenter() {
     nodes.forEach(node => {
         const left = parseFloat(node.style.left);
         const top = parseFloat(node.style.top);
-        
         const halfW = 110; 
         const halfH = 40;  
 
