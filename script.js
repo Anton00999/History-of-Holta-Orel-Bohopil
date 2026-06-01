@@ -16,7 +16,7 @@ const mapData = {
             children: [
                 { 
                     text: 'Новослобідський полк', 
-                    info: { "Адмін. одиниця"},
+                    info: { "Адмін. одиниця" },
                     children: []
                 }
             ]
@@ -27,7 +27,7 @@ const mapData = {
             children: [
                 { 
                     text: 'Брацлавське воєводство', 
-                    info: {"Адмін. одиниця"},
+                    info: { "Адмін. одиниця" },
                     children: []
                 }
             ]
@@ -38,7 +38,7 @@ const mapData = {
             children: [
                 { 
                     text: 'Ханська Україна', 
-                    info: { "Адмін. одиниця"},
+                    info: { "Адмін. одиниця" },
                     children: []
                 }
             ]
