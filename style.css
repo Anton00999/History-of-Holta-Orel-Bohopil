@@ -1,375 +1,120 @@
-const rootNode = document.getElementById('root-node');
-const svg = document.getElementById('lines-svg');
-const container = document.getElementById('mindmap-container');
-const zoomWrapper = document.getElementById('zoom-wrapper');
-const tooltip = document.getElementById('tooltip');
-
-let tooltipTimeout; 
-let terminalNodes = []; 
-let terminalLinks = []; // Зберігаємо лінії фінального трикутника для анімації
-let openedTerminalsCount = 0; 
-
-const mapData = {
-    text: 'Фронтир',
-    info: { "Сутність": "Зона контакту", "Період": "XVI-XVIII ст.", "Регіон": "Україна" },
-    children: [
-        {
-            text: 'Річ Посполита',
-            theme: 'polish', 
-            info: { "Проблема": "Внутрішня криза", "Вектор": "Збереження кордонів", "Вплив": "Полонізація" },
-            children: [
-                { 
-                    text: 'Брацлавське воєводство', 
-                    info: { "Статус": "Адмін. одиниця" },
-                    children: [
-                        { text: 'Богопіль', info: { "Маєток": "Закладений 1763-го року" }, children: [] }
-                    ]
-                }
-            ]
-        },
-        {
-            text: 'Російська імперія',
-            theme: 'russian', 
-            info: { "Вектор": "Південна експансія", "Мета": "Вихід до моря", "Дії": "Колонізація" },
-            children: [
-                { 
-                    text: 'Новослобідський полк', 
-                    info: { "Статус": "Адмін. одиниця" },
-                    children: [
-                        { text: 'Орел', info: { "Слобода": "Заснований 1757-го року" }, children: [] }
-                    ]
-                }
-            ]
-        },
-        {
-            text: 'Османська імперія',
-            theme: 'ottoman', 
-            info: { "Вектор": "Утримання Причорномор'я", "Васали": "Кримське ханство", "Мета": "Безпека кордонів" },
-            children: [
-                { 
-                    text: 'Ханська Україна', 
-                    info: { "Статус": "Адмін. одиниця" },
-                    children: [
-                        { text: 'Голта', info: { "Ханська слобода": "Заснована 1762-го року" }, children: [] }
-                    ]
-                }
-            ]
-        }
-    ]
-};
-
-const distance = 300; 
-
-rootNode.style.left = `${window.innerWidth / 2}px`;
-rootNode.style.top = `${window.innerHeight / 2}px`;
-rootNode.dataset.expanded = "false";
-setupTooltip(rootNode, mapData.info);
-
-rootNode.addEventListener('click', (e) => {
-    // ЛОГІКА ДРУГОГО КЛІКУ (ФІНАЛ)
-    if (rootNode.dataset.state === "ready-for-finale") {
-        addPulseEffect(rootNode);
-        rootNode.classList.remove('golden-ready');
-        rootNode.dataset.state = "finished";
-
-        document.body.classList.add('finale-water');
-        
-        // Запускаємо JS-анімацію зсуву верхньої гілки
-        requestAnimationFrame(animateTilt);
-        return;
-    }
-
-    if (rootNode.dataset.expanded === "true") return; 
-    
-    addPulseEffect(rootNode);
-    rootNode.dataset.expanded = "true";
-    rootNode.classList.remove('large');
-    rootNode.classList.add('shrunk');
-    hideTooltipInstantly();
-
-    setTimeout(() => {
-        const centerX = parseFloat(rootNode.style.left);
-        const centerY = parseFloat(rootNode.style.top);
-        spawnChildren(mapData.children, centerX, centerY, -90, 360, null);
-    }, 800);
-});
-
-function spawnChildren(childrenArray, parentX, parentY, baseAngle, spreadAngle, parentTheme) {
-    if (!childrenArray || childrenArray.length === 0) return;
-
-    const angleStep = spreadAngle / childrenArray.length;
-    const startAngle = baseAngle - (spreadAngle / 2) + (angleStep / 2);
-
-    childrenArray.forEach((childData, index) => {
-        const angle = startAngle + angleStep * index;
-        const angleRad = angle * (Math.PI / 180);
-
-        const targetX = parentX + Math.cos(angleRad) * distance;
-        const targetY = parentY + Math.sin(angleRad) * distance;
-
-        const currentTheme = childData.theme || parentTheme;
-
-        // Зберігаємо всі дані про елемент в його об'єкт (для подальшої анімації)
-        childData.localAngle = angle;
-        childData.distance = distance;
-        childData.currentX = targetX;
-        childData.currentY = targetY;
-
-        const childEl = document.createElement('div');
-        childEl.className = 'node child';
-        if (currentTheme) childEl.classList.add(currentTheme);
-        
-        childEl.textContent = childData.text;
-        childEl.style.left = `${targetX}px`;
-        childEl.style.top = `${targetY}px`;
-        
-        const delay = index * 0.2;
-        childEl.style.animationDelay = `${delay}s`;
-        childEl.dataset.expanded = "false";
-        
-        childData.nodeEl = childEl; // Прив'язуємо HTML до даних
-        zoomWrapper.appendChild(childEl);
-        
-        const mainLine = drawLine(parentX, parentY, targetX, targetY, delay, false);
-        if (currentTheme) mainLine.classList.add(currentTheme);
-        childData.lineEl = mainLine; // Прив'язуємо лінію до даних
-
-        setupTooltip(childEl, childData.info);
-
-        if (!childData.children || childData.children.length === 0) {
-            openedTerminalsCount++;
-            terminalNodes.push(childData);
-            
-            if (terminalNodes.length > 1) {
-                terminalNodes.slice(0, -1).forEach(prevNode => {
-                    const gLine = drawLine(prevNode.currentX, prevNode.currentY, targetX, targetY, delay + 0.6, true);
-                    gLine.classList.add(currentTheme); 
-                    gLine.classList.add('golden');
-                    
-                    // Зберігаємо зв'язок для анімації трикутника
-                    terminalLinks.push({ lineEl: gLine, nodeA: prevNode, nodeB: childData });
-                });
-            }
-
-            if (openedTerminalsCount === 3) {
-                setTimeout(() => {
-                    rootNode.classList.add('golden-ready');
-                    rootNode.dataset.state = "ready-for-finale";
-                }, 2000); 
-            }
-        }
-
-        childEl.addEventListener('click', () => {
-            if (childEl.dataset.expanded === "true") return;
-            
-            addPulseEffect(childEl);
-            childEl.dataset.expanded = "true";
-            hideTooltipInstantly();
-
-            if (childData.children && childData.children.length > 0) {
-                spawnChildren(childData.children, targetX, targetY, angle, 120, currentTheme);
-            }
-        });
-    });
-
-    setTimeout(autoScaleAndCenter, 300);
+body, html {
+    margin: 0; padding: 0; width: 100%; height: 100%;
+    background-color: #1a1a2e; font-family: 'Segoe UI', Tahoma, sans-serif;
+    overflow: hidden;
+    transition: background 2s ease; 
 }
 
-// ----------------------------------------------------
-// ЛОГІКА МАТЕМАТИЧНОЇ АНІМАЦІЇ НАХИЛУ
-// ----------------------------------------------------
-let startTime = null;
-const duration = 2500; // 2.5 секунди
-
-function animateTilt(timestamp) {
-    if (!startTime) startTime = timestamp;
-    const elapsed = timestamp - startTime;
-    let progress = elapsed / duration;
-    if (progress > 1) progress = 1;
-
-    // Плавність анімації (ease-in-out)
-    const ease = progress < 0.5 ? 4 * progress * progress * progress : 1 - Math.pow(-2 * progress + 2, 3) / 2;
-
-    // Зсуваємо верхню гілку на 40 градусів вліво (віднімаємо 40)
-    const currentOffset = -40 * ease; 
-
-    const centerX = parseFloat(rootNode.style.left);
-    const centerY = parseFloat(rootNode.style.top);
-
-    // Оновлюємо позиції лише для Російської імперії (верхня гілка)
-    mapData.children.forEach(mainBranch => {
-        let offset = 0;
-        if (mainBranch.theme === 'russian') {
-            offset = currentOffset;
-        }
-        updateBranchPositions(mainBranch, centerX, centerY, offset);
-    });
-
-    // Оновлюємо золоті лінії трикутника, щоб вони тягнулися за вузлами
-    terminalLinks.forEach(link => {
-        link.lineEl.setAttribute('x1', link.nodeA.currentX);
-        link.lineEl.setAttribute('y1', link.nodeA.currentY);
-        link.lineEl.setAttribute('x2', link.nodeB.currentX);
-        link.lineEl.setAttribute('y2', link.nodeB.currentY);
-    });
-
-    if (progress < 1) {
-        requestAnimationFrame(animateTilt);
-    } else {
-        autoScaleAndCenter(); // Відцентруємо камеру після фіналу
-    }
+/* ФІНАЛ - Ефект води на фоні */
+body.finale-water {
+    background-color: #0b1a2a;
+    background-image: radial-gradient(circle at center, #112d4e 0%, #06111c 100%);
 }
 
-// Рекурсивна функція перерахунку координат
-function updateBranchPositions(nodeData, parentX, parentY, angleOffset) {
-    if (!nodeData.nodeEl) return;
-
-    // Рахуємо новий кут відносно батька
-    const newAngle = nodeData.localAngle + angleOffset;
-    const angleRad = newAngle * (Math.PI / 180);
-
-    const targetX = parentX + Math.cos(angleRad) * nodeData.distance;
-    const targetY = parentY + Math.sin(angleRad) * nodeData.distance;
-
-    nodeData.currentX = targetX;
-    nodeData.currentY = targetY;
-
-    // Миттєво переміщуємо блок (без повороту тексту)
-    nodeData.nodeEl.style.left = `${targetX}px`;
-    nodeData.nodeEl.style.top = `${targetY}px`;
-
-    // Миттєво переміщуємо лінію
-    if (nodeData.lineEl) {
-        nodeData.lineEl.setAttribute('x1', parentX);
-        nodeData.lineEl.setAttribute('y1', parentY);
-        nodeData.lineEl.setAttribute('x2', targetX);
-        nodeData.lineEl.setAttribute('y2', targetY);
-    }
-
-    if (nodeData.children) {
-        nodeData.children.forEach(child => {
-            updateBranchPositions(child, targetX, targetY, angleOffset);
-        });
-    }
-}
-// ----------------------------------------------------
-
-function drawLine(x1, y1, x2, y2, delay, isThick = false) {
-    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    line.setAttribute('x1', x1);
-    line.setAttribute('y1', y1);
-    line.setAttribute('x2', x2);
-    line.setAttribute('y2', y2);
-    line.setAttribute('class', 'line');
-    
-    const length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
-    line.style.strokeDasharray = length;
-    line.style.strokeDashoffset = length;
-
-    if (isThick) {
-        line.style.strokeWidth = '5px';
-        line.style.stroke = '#f9a826'; 
-        line.style.filter = 'drop-shadow(0 0 10px rgba(249, 168, 38, 0.7))';
-    }
-
-    line.style.animationDelay = `${delay}s`;
-    svg.insertBefore(line, svg.firstChild);
-    
-    return line; 
+#mindmap-container {
+    position: relative; width: 100vw; height: 100vh;
 }
 
-function addPulseEffect(element) {
-    element.classList.remove('pulse');
-    void element.offsetWidth; 
-    element.classList.add('pulse');
+#zoom-wrapper {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    transform-origin: 0 0; 
+    transition: transform 1s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-function hideTooltipInstantly() {
-    clearTimeout(tooltipTimeout);
-    tooltip.style.opacity = '0';
-    tooltip.style.display = 'none';
+#lines-svg {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    overflow: visible; z-index: 1; pointer-events: none;
 }
 
-function setupTooltip(element, infoObj) {
-    if (!infoObj || Object.keys(infoObj).length === 0) return;
-
-    element.addEventListener('mouseenter', (e) => {
-        clearTimeout(tooltipTimeout); 
-        
-        let tableHTML = '<table>';
-        for (const [key, value] of Object.entries(infoObj)) {
-            tableHTML += `<tr><th>${key}</th><td>${value}</td></tr>`;
-        }
-        tableHTML += '</table>';
-        
-        tooltip.innerHTML = tableHTML;
-        tooltip.style.display = 'block';
-        
-        setTimeout(() => { tooltip.style.opacity = '1'; }, 10);
-    });
-
-    element.addEventListener('mousemove', (e) => {
-        const cx = window.innerWidth / 2;
-        const cy = window.innerHeight / 2;
-        const offset = 20;
-        let left, top;
-
-        if (e.clientX <= cx) { left = e.clientX + offset; } 
-        else { left = e.clientX - tooltip.offsetWidth - offset; }
-
-        if (e.clientY <= cy) { top = e.clientY + offset; } 
-        else { top = e.clientY - tooltip.offsetHeight - offset; }
-
-        tooltip.style.left = `${left}px`;
-        tooltip.style.top = `${top}px`;
-    });
-
-    element.addEventListener('mouseleave', () => {
-        tooltip.style.opacity = '0';
-        tooltipTimeout = setTimeout(() => { tooltip.style.display = 'none'; }, 200); 
-    });
+.line {
+    stroke: #e94560; stroke-width: 3;
+    stroke-dasharray: 1000; stroke-dashoffset: 1000;
+    animation: drawLine 1s ease forwards;
+    transition: stroke 1.5s ease, filter 1.5s ease;
 }
 
-function autoScaleAndCenter() {
-    const nodes = document.querySelectorAll('.node');
-    let minX = Infinity, maxX = -Infinity;
-    let minY = Infinity, maxY = -Infinity;
+@keyframes drawLine { to { stroke-dashoffset: 0; } }
 
-    nodes.forEach(node => {
-        const left = parseFloat(node.style.left);
-        const top = parseFloat(node.style.top);
-        const halfW = 110; 
-        const halfH = 40;  
-
-        if (left - halfW < minX) minX = left - halfW;
-        if (left + halfW > maxX) maxX = left + halfW;
-        if (top - halfH < minY) minY = top - halfH;
-        if (top + halfH > maxY) maxY = top + halfH;
-    });
-
-    const bboxWidth = maxX - minX;
-    const bboxHeight = maxY - minY;
-    const bboxCenterX = minX + bboxWidth / 2;
-    const bboxCenterY = minY + bboxHeight / 2;
-
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-
-    const padding = 150; 
-    const scaleX = (viewportWidth - padding) / bboxWidth;
-    const scaleY = (viewportHeight - padding) / bboxHeight;
-    
-    let scale = Math.min(scaleX, scaleY, 1); 
-    if (!isFinite(scale) || scale <= 0) scale = 1;
-
-    const translateX = (viewportWidth / 2) - (bboxCenterX * scale);
-    const translateY = (viewportHeight / 2) - (bboxCenterY * scale);
-
-    zoomWrapper.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+.node {
+    position: absolute; background-color: #16213e; color: #fff;
+    display: flex; justify-content: center; align-items: center;
+    border-radius: 12px; border: 2px solid #e94560;
+    cursor: pointer;
+    /* УВАГА: transition змінено, щоб JS міг плавно рухати координати */
+    transition: width 0.8s, height 0.8s, font-size 0.8s, opacity 0.8s, box-shadow 0.3s ease, border-color 1.5s ease, background-color 1.5s ease;
+    z-index: 2; text-align: center; box-sizing: border-box; user-select: none;
+    backface-visibility: hidden;
+    transform: translate(-50%, -50%);
 }
 
-window.addEventListener('resize', () => {
-    if (rootNode.dataset.expanded === "true") {
-        autoScaleAndCenter();
-    }
-});
+.node:hover {
+    box-shadow: 0 0 20px rgba(233, 69, 96, 0.7);
+    transform: translate(-50%, -50%) scale(1.05);
+}
+
+.golden-ready {
+    box-shadow: 0 0 30px #f9a826, inset 0 0 20px #f9a826 !important;
+    border-color: #fff !important;
+    animation: readyPulse 1.5s infinite !important;
+    cursor: pointer !important;
+}
+
+@keyframes readyPulse {
+    0% { transform: translate(-50%, -50%) scale(1); }
+    50% { transform: translate(-50%, -50%) scale(1.1); }
+    100% { transform: translate(-50%, -50%) scale(1); }
+}
+
+.node.large {
+    width: 60vw; height: 40vh; font-size: 5rem; font-weight: bold;
+    letter-spacing: 5px; text-transform: uppercase;
+}
+
+.node.shrunk {
+    width: 200px; height: 80px; font-size: 1.5rem; font-weight: bold; cursor: default;
+}
+
+.node.child {
+    width: 220px; height: 70px; font-size: 1.1rem; opacity: 0;
+    transform: translate(-50%, -50%) scale(0);
+    animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes popIn {
+    to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+.pulse::after {
+    content: ''; position: absolute; top: -2px; left: -2px; right: -2px; bottom: -2px;
+    border-radius: inherit; border: 2px solid inherit; box-sizing: border-box;
+    animation: pulseEffect 0.6s cubic-bezier(0.25, 1, 0.5, 1); pointer-events: none;
+}
+
+@keyframes pulseEffect {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(1.4); opacity: 0; }
+}
+
+/* ФІНАЛ - Кольори (Ліва/Річ Посполита - Золото, ПраваВерхня/Росія - Малиновий, Нижня/Османи - Синій) */
+body.finale-water .node.polish { border-color: #cca43b; box-shadow: 0 0 15px rgba(204, 164, 59, 0.7); }
+body.finale-water .line.polish { stroke: #cca43b; filter: drop-shadow(0 0 10px rgba(204, 164, 59, 0.7)); }
+
+body.finale-water .node.russian { border-color: #d81159; box-shadow: 0 0 15px rgba(216, 17, 89, 0.7); }
+body.finale-water .line.russian { stroke: #d81159; filter: drop-shadow(0 0 10px rgba(216, 17, 89, 0.7)); }
+
+body.finale-water .node.ottoman { border-color: #0496ff; box-shadow: 0 0 15px rgba(4, 150, 255, 0.7); }
+body.finale-water .line.ottoman { stroke: #0496ff; filter: drop-shadow(0 0 10px rgba(4, 150, 255, 0.7)); }
+
+/* Таблиця підказки */
+.tooltip {
+    position: absolute; background: rgba(10, 10, 20, 0.95);
+    border: 2px solid #e94560; border-radius: 8px; padding: 12px;
+    color: white; font-size: 0.95rem; pointer-events: none; 
+    opacity: 0; display: none; transition: opacity 0.3s;
+    z-index: 100; box-shadow: 0 10px 25px rgba(0,0,0,0.7); min-width: 220px;
+}
+.tooltip table { border-collapse: collapse; width: 100%; }
+.tooltip th, .tooltip td { padding: 6px 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); text-align: left; vertical-align: top; }
+.tooltip th { color: #e94560; font-weight: bold; width: 90px; }
+.tooltip td { color: #ccc; }
+.tooltip tr:last-child th, .tooltip tr:last-child td { border-bottom: none; }
