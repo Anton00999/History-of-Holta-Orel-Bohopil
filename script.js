@@ -6,7 +6,7 @@ const tooltip = document.getElementById('tooltip');
 
 let tooltipTimeout; 
 let terminalNodes = []; 
-let terminalLinks = []; // Зберігаємо лінії фінального трикутника для анімації
+let terminalLinks = []; 
 let openedTerminalsCount = 0; 
 
 const mapData = {
@@ -66,7 +66,6 @@ rootNode.dataset.expanded = "false";
 setupTooltip(rootNode, mapData.info);
 
 rootNode.addEventListener('click', (e) => {
-    // ЛОГІКА ДРУГОГО КЛІКУ (ФІНАЛ)
     if (rootNode.dataset.state === "ready-for-finale") {
         addPulseEffect(rootNode);
         rootNode.classList.remove('golden-ready');
@@ -74,7 +73,6 @@ rootNode.addEventListener('click', (e) => {
 
         document.body.classList.add('finale-water');
         
-        // Запускаємо JS-анімацію зсуву верхньої гілки
         requestAnimationFrame(animateTilt);
         return;
     }
@@ -109,7 +107,6 @@ function spawnChildren(childrenArray, parentX, parentY, baseAngle, spreadAngle, 
 
         const currentTheme = childData.theme || parentTheme;
 
-        // Зберігаємо всі дані про елемент в його об'єкт (для подальшої анімації)
         childData.localAngle = angle;
         childData.distance = distance;
         childData.currentX = targetX;
@@ -127,12 +124,12 @@ function spawnChildren(childrenArray, parentX, parentY, baseAngle, spreadAngle, 
         childEl.style.animationDelay = `${delay}s`;
         childEl.dataset.expanded = "false";
         
-        childData.nodeEl = childEl; // Прив'язуємо HTML до даних
+        childData.nodeEl = childEl; 
         zoomWrapper.appendChild(childEl);
         
         const mainLine = drawLine(parentX, parentY, targetX, targetY, delay, false);
         if (currentTheme) mainLine.classList.add(currentTheme);
-        childData.lineEl = mainLine; // Прив'язуємо лінію до даних
+        childData.lineEl = mainLine; 
 
         setupTooltip(childEl, childData.info);
 
@@ -146,7 +143,6 @@ function spawnChildren(childrenArray, parentX, parentY, baseAngle, spreadAngle, 
                     gLine.classList.add(currentTheme); 
                     gLine.classList.add('golden');
                     
-                    // Зберігаємо зв'язок для анімації трикутника
                     terminalLinks.push({ lineEl: gLine, nodeA: prevNode, nodeB: childData });
                 });
             }
@@ -176,10 +172,8 @@ function spawnChildren(childrenArray, parentX, parentY, baseAngle, spreadAngle, 
 }
 
 // ----------------------------------------------------
-// ЛОГІКА МАТЕМАТИЧНОЇ АНІМАЦІЇ НАХИЛУ
-// ----------------------------------------------------
 let startTime = null;
-const duration = 2500; // 2.5 секунди
+const duration = 2500; 
 
 function animateTilt(timestamp) {
     if (!startTime) startTime = timestamp;
@@ -187,16 +181,12 @@ function animateTilt(timestamp) {
     let progress = elapsed / duration;
     if (progress > 1) progress = 1;
 
-    // Плавність анімації (ease-in-out)
     const ease = progress < 0.5 ? 4 * progress * progress * progress : 1 - Math.pow(-2 * progress + 2, 3) / 2;
-
-    // Зсуваємо верхню гілку на 40 градусів вліво (віднімаємо 40)
     const currentOffset = -40 * ease; 
 
     const centerX = parseFloat(rootNode.style.left);
     const centerY = parseFloat(rootNode.style.top);
 
-    // Оновлюємо позиції лише для Російської імперії (верхня гілка)
     mapData.children.forEach(mainBranch => {
         let offset = 0;
         if (mainBranch.theme === 'russian') {
@@ -205,26 +195,33 @@ function animateTilt(timestamp) {
         updateBranchPositions(mainBranch, centerX, centerY, offset);
     });
 
-    // Оновлюємо золоті лінії трикутника, щоб вони тягнулися за вузлами
+    // Оновлюємо золоті лінії трикутника та ПЕРЕРАХОВУЄМО їхню довжину
     terminalLinks.forEach(link => {
-        link.lineEl.setAttribute('x1', link.nodeA.currentX);
-        link.lineEl.setAttribute('y1', link.nodeA.currentY);
-        link.lineEl.setAttribute('x2', link.nodeB.currentX);
-        link.lineEl.setAttribute('y2', link.nodeB.currentY);
+        const x1 = link.nodeA.currentX;
+        const y1 = link.nodeA.currentY;
+        const x2 = link.nodeB.currentX;
+        const y2 = link.nodeB.currentY;
+
+        link.lineEl.setAttribute('x1', x1);
+        link.lineEl.setAttribute('y1', y1);
+        link.lineEl.setAttribute('x2', x2);
+        link.lineEl.setAttribute('y2', y2);
+
+        // ОСЬ ВИПРАВЛЕННЯ: Динамічно змінюємо довжину лінії під час розтягування
+        const newLength = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+        link.lineEl.style.strokeDasharray = newLength;
     });
 
     if (progress < 1) {
         requestAnimationFrame(animateTilt);
     } else {
-        autoScaleAndCenter(); // Відцентруємо камеру після фіналу
+        autoScaleAndCenter(); 
     }
 }
 
-// Рекурсивна функція перерахунку координат
 function updateBranchPositions(nodeData, parentX, parentY, angleOffset) {
     if (!nodeData.nodeEl) return;
 
-    // Рахуємо новий кут відносно батька
     const newAngle = nodeData.localAngle + angleOffset;
     const angleRad = newAngle * (Math.PI / 180);
 
@@ -234,11 +231,9 @@ function updateBranchPositions(nodeData, parentX, parentY, angleOffset) {
     nodeData.currentX = targetX;
     nodeData.currentY = targetY;
 
-    // Миттєво переміщуємо блок (без повороту тексту)
     nodeData.nodeEl.style.left = `${targetX}px`;
     nodeData.nodeEl.style.top = `${targetY}px`;
 
-    // Миттєво переміщуємо лінію
     if (nodeData.lineEl) {
         nodeData.lineEl.setAttribute('x1', parentX);
         nodeData.lineEl.setAttribute('y1', parentY);
