@@ -255,10 +255,10 @@ body.finale-water .line.ottoman { stroke: #0496ff; filter: drop-shadow(0 0 10px 
 /* --- ІНТЕРАКТИВНІ ПОСЕЛЕННЯ ТА СУВОЇ --- */
 .settlement-group {
     opacity: 1; 
-    transition: opacity 1.5s ease;
+    /* ЗМІНЕНО: Було 1.5s, тепер 0.3s для дуже швидкої реакції */
+    transition: opacity 0.3s ease; 
 }
 
-/* ВАЖЛИВО: !important жорстко забороняє показувати поселення до їхньої черги */
 .settlement-group.timeline-hidden {
     opacity: 0 !important; 
     pointer-events: none !important;
@@ -289,29 +289,42 @@ body.finale-water .line.ottoman { stroke: #0496ff; filter: drop-shadow(0 0 10px 
     fill: #fff; filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8)); font-size: 34px;
 }
 
-/* ГАРНА АНІМАЦІЯ ПОЯВИ (Виїзд знизу + Золотий спалах) */
+/* НОВА, ЯСКРАВА АНІМАЦІЯ ПОЯВИ */
 @keyframes settlementFlash {
-    0% { filter: drop-shadow(0 0 0px #fff) brightness(1); opacity: 0; transform: translateY(15px); }
-    30% { filter: drop-shadow(0 0 30px #f9a826) brightness(2.5); opacity: 1; transform: translateY(0); }
-    100% { filter: drop-shadow(0 0 5px #fff) brightness(1); opacity: 1; transform: translateY(0); }
+    0% { 
+        filter: drop-shadow(0 0 0px #f9a826) brightness(1); 
+        opacity: 0; 
+    }
+    15% { 
+        /* Сильний спалах: яскравість х3, велика золота тінь, біла заливка */
+        filter: drop-shadow(0 0 40px #f9a826) brightness(3); 
+        fill: #ffffff;
+        opacity: 1; 
+    }
+    100% { 
+        filter: drop-shadow(0 0 5px #fff) brightness(1); 
+        opacity: 1; 
+    }
 }
 
 .settlement-group.flash-reveal .house-icon,
 .settlement-group.flash-reveal .settlement-label {
-    animation: settlementFlash 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+    /* ЗМІНЕНО: Анімація стала швидшою і агресивнішою (1 секунда) */
+    animation: settlementFlash 1s ease-out forwards;
 }
 
 /* Кнопка-сувій */
 .scroll-btn {
     cursor: pointer; pointer-events: all; 
-    transition: filter 0.3s ease, opacity 0.5s ease;
+    /* ЗМІНЕНО: Сувій теж зникає швидко (0.3s) */
+    transition: filter 0.3s ease, opacity 0.3s ease;
     filter: drop-shadow(0 0 3px rgba(249, 168, 38, 0.8));
 }
+
 .scroll-btn:hover {
     filter: drop-shadow(0 0 15px #f9a826) brightness(1.5);
 }
 
-/* Приховуємо сувій, якщо подія вже минула */
 .scroll-btn.hidden {
     opacity: 0 !important; pointer-events: none !important;
 }
