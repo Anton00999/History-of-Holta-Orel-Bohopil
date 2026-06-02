@@ -608,7 +608,7 @@ function updateTimelineView(currentYear) {
     processSettlement('bohopil', 1763, 1763.9, currentYear);
     processSettlement('fort', 1764, 1766, currentYear); // 1766 - щоб сувій форту лишався до кінця повзунка
     
-    processAttackEvent('attack' 1763.9, 1764, currentYear); 
+    processAttackEvent('attack', 1763.9, 1764, currentYear); 
     
     if (currentYear < 1757) {
         nextBtn.textContent = "Почати ➔";
