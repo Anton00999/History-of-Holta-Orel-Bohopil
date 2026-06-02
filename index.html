@@ -28,6 +28,11 @@
                 </filter>
                 
                 <path id="tiny-house" d="M0,-3 L3,0 L3,4 L-3,4 L-3,0 Z" />
+                
+                <g id="scroll-icon">
+                    <rect x="-10" y="-12" width="20" height="24" rx="2" fill="rgba(22, 33, 62, 0.9)" stroke="#f9a826" stroke-width="2"/>
+                    <path d="M-5,-6 L5,-6 M-5,0 L5,0 M-5,6 L2,6" stroke="#f9a826" stroke-width="2" stroke-linecap="round"/>
+                </g>
             </defs>
 
             <g filter="url(#waterGlow)">
@@ -36,19 +41,53 @@
                 <path class="river-waves" d="M 100,125 C 200,165 250,185 300,220 M 350,270 C 400,320 450,350 480,370 M 550,430 C 650,480 750,530 850,610 M 200,530 C 250,460 300,440 380,420 M 600,470 C 650,500 700,540 800,600 M 150,140 C 250,190 300,220 350,260" />
             </g>
 
-            <g id="settlement-bohopil" class="settlement-group" data-url="bohopil.html">
-                <circle cx="380" cy="360" r="55" fill="transparent" class="hitbox" />
-                <text x="360" y="320" class="settlement-label">Богопіль</text>
-            </g>
-            <g id="settlement-orel" class="settlement-group" data-url="orel.html">
+            <g id="settlement-orel" class="settlement-group timeline-hidden" data-id="orel">
                 <circle cx="580" cy="320" r="60" fill="transparent" class="hitbox" />
                 <text x="580" y="270" class="settlement-label">Орел</text>
+                <use href="#scroll-icon" x="650" y="260" class="scroll-btn" />
             </g>
-            <g id="settlement-holta" class="settlement-group" data-url="holta.html">
+
+            <g id="settlement-holta" class="settlement-group timeline-hidden" data-id="holta">
                 <circle cx="510" cy="460" r="55" fill="transparent" class="hitbox" />
                 <text x="510" y="520" class="settlement-label">Голта</text>
+                <use href="#scroll-icon" x="580" y="510" class="scroll-btn" />
+            </g>
+
+            <g id="settlement-bohopil" class="settlement-group timeline-hidden" data-id="bohopil">
+                <circle cx="380" cy="360" r="55" fill="transparent" class="hitbox" />
+                <text x="360" y="320" class="settlement-label">Богопіль</text>
+                <use href="#scroll-icon" x="450" y="310" class="scroll-btn" />
             </g>
         </svg>
+    </div>
+
+    <div id="bottom-timeline" class="hidden">
+        <div class="timeline-track">
+            <div class="timeline-line"></div>
+            <div class="timeline-progress" id="timeline-progress"></div>
+            
+            <div class="timeline-node" data-index="0">
+                <div class="node-circle"></div>
+                <div class="node-year">1757</div>
+            </div>
+            <div class="timeline-node locked" data-index="1">
+                <div class="node-circle"></div>
+                <div class="node-year">1762</div>
+            </div>
+            <div class="timeline-node locked" data-index="2">
+                <div class="node-circle"></div>
+                <div class="node-year">1763</div>
+            </div>
+        </div>
+        <button id="next-event-btn">Наступна подія ➔</button>
+    </div>
+
+    <div id="info-modal" class="hidden">
+        <div class="modal-content">
+            <button id="close-modal">&times;</button>
+            <h2 id="modal-title">Назва</h2>
+            <p id="modal-text">Текст довідки...</p>
+        </div>
     </div>
 
     <script src="script.js"></script>
