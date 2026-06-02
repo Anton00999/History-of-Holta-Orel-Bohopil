@@ -504,13 +504,16 @@ body.panel-open #bottom-timeline {
 .tooltip tr:last-child th, .tooltip tr:last-child td { border-bottom: none; }
 
 
-/* --- АНІМАЦІЇ ДЛЯ НАПАДУ (1763.9) --- */
-#event-attack {
+#event-attack, 
+#event-attack-orel {
     transition: opacity 0.5s ease;
 }
 
-#event-attack.timeline-hidden {
-    opacity: 0 !important; visibility: hidden !important; pointer-events: none !important;
+#event-attack.timeline-hidden, 
+#event-attack-orel.timeline-hidden {
+    opacity: 0 !important; 
+    visibility: hidden !important; 
+    pointer-events: none !important;
 }
 
 /* Анімація руху стрілки */
