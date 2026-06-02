@@ -407,9 +407,17 @@ body.finale-water .line.ottoman { stroke: #0496ff; filter: drop-shadow(0 0 10px 
 #next-event-btn:hover { background: #f9a826; color: #16213e; box-shadow: 0 0 20px rgba(249, 168, 38, 0.6); }
 #next-event-btn:disabled { opacity: 0; pointer-events: none; }
 
-/* Анімація хатинок залишається такою ж */
-.timeline-house { transition: opacity 0.5s ease, fill 0.2s ease !important; }
-/* --- МОДАЛЬНЕ ВІКНО ДОВІДКИ --- */
+/* ХАТИНКИ: Оптимізація через апаратні класи виклику */
+.timeline-house { 
+    opacity: 0;
+    will-change: opacity; 
+    transition: opacity 0.4s ease, fill 0.2s ease !important; 
+}
+
+/* Хата отримує 100% видимість жорстко і без затримок */
+.timeline-house.visible {
+    opacity: 1 !important;
+}
 #info-modal {
     position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
     background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px);
