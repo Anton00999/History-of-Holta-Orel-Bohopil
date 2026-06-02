@@ -351,7 +351,6 @@ body.finale-water .line.ottoman { stroke: #0496ff; filter: drop-shadow(0 0 10px 
 
 .slider-wrapper {
     flex-grow: 1; margin-right: 40px; display: flex; flex-direction: column; align-items: center;
-    position: relative;
 }
 
 #year-display {
@@ -360,11 +359,15 @@ body.finale-water .line.ottoman { stroke: #0496ff; filter: drop-shadow(0 0 10px 
     margin-bottom: 10px; font-family: monospace;
 }
 
-/* Стилізація самого повзунка */
+/* Контейнер для накладання */
+.slider-container-inner {
+    position: relative; width: 100%; display: flex; align-items: center; height: 28px;
+}
+
+/* Сам повзунок */
 #year-slider {
-    -webkit-appearance: none; width: 100%; height: 6px; 
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 5px; outline: none; transition: background 0.3s;
+    position: relative; z-index: 2; -webkit-appearance: none; width: 100%; height: 6px; 
+    background: rgba(255, 255, 255, 0.2); border-radius: 5px; outline: none; transition: background 0.3s;
 }
 
 #year-slider::-webkit-slider-thumb {
@@ -374,8 +377,23 @@ body.finale-water .line.ottoman { stroke: #0496ff; filter: drop-shadow(0 0 10px 
     box-shadow: 0 0 15px rgba(4, 150, 255, 0.8); transition: all 0.2s;
 }
 
-#year-slider::-webkit-slider-thumb:hover, #year-slider:active::-webkit-slider-thumb {
+#year-slider::-webkit-slider-thumb:hover {
     transform: scale(1.3); background: #f9a826; border-color: #fff; box-shadow: 0 0 20px #f9a826;
+}
+
+/* Блокування повзунка під час анімації */
+#year-slider:disabled::-webkit-slider-thumb { cursor: default; transform: none; }
+
+/* Крапки подій на таймлайні */
+#slider-markers {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1;
+}
+
+.slider-marker {
+    position: absolute; top: 8px; /* Центруємо по висоті (28/2 - 12/2) */
+    width: 12px; height: 12px; background: #f9a826; border-radius: 50%;
+    border: 2px solid #16213e; transform: translateX(-50%);
+    box-shadow: 0 0 5px rgba(249, 168, 38, 0.8);
 }
 
 .slider-ticks {
@@ -393,10 +411,11 @@ body.finale-water .line.ottoman { stroke: #0496ff; filter: drop-shadow(0 0 10px 
 #next-event-btn:hover { background: #f9a826; color: #16213e; box-shadow: 0 0 20px rgba(249, 168, 38, 0.6); }
 #next-event-btn:disabled { opacity: 0; pointer-events: none; }
 
-/* Динамічні хатинки: плавна зміна прозорості + старий ховер-колір */
+/* Анімація прояву кожної окремої хатинки */
 .timeline-house {
     transition: opacity 0.5s ease, fill 0.2s ease !important;
 }
+
 /* --- МОДАЛЬНЕ ВІКНО ДОВІДКИ --- */
 #info-modal {
     position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
