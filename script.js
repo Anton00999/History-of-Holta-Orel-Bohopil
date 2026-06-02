@@ -8,7 +8,7 @@ let tooltipTimeout;
 let terminalNodes = []; 
 let terminalLinks = []; 
 let openedTerminalsCount = 0; 
-let finaleTriggered = false; // ДОДАНО: щоб таймер не запустився двічі
+let finaleTriggered = false; 
 
 const mapData = {
     text: 'Фронтир',
@@ -216,7 +216,6 @@ function animateTilt(timestamp) {
     } else {
         autoScaleAndCenter(); 
 
-        // ДОДАНО: Таймер на 5 секунд після якого мапа розсіюється
         if (!finaleTriggered) {
             finaleTriggered = true;
             setTimeout(() => {
@@ -496,36 +495,6 @@ function updateTimelineView() {
     } else {
         nextBtn.disabled = false;
         // Якщо користувач відмотав час назад
-        if (currentTimelineStep < maxUnlockedStep) {
-            nextBtn.textContent = "Вперед ➔";
-        } else {
-            nextBtn.textContent = "Наступна подія ➔";
-        }
-    }
-}
-
-    // 2. Оновлюємо вузли на нижній шкалі
-    const nodes = document.querySelectorAll('.timeline-node');
-    nodes.forEach((node, index) => {
-        node.classList.remove('active');
-        if (index === currentTimelineStep) node.classList.add('active');
-        
-        if (index <= maxUnlockedStep) {
-            node.classList.remove('locked');
-        }
-    });
-
-    // 3. Заповнюємо смугу прогресу
-    const progress = document.getElementById('timeline-progress');
-    progress.style.width = `${(currentTimelineStep / (historyData.length - 1)) * 100}%`;
-
-    // 4. Оновлюємо кнопку "Наступна подія"
-    const nextBtn = document.getElementById('next-event-btn');
-    if (currentTimelineStep === historyData.length - 1) {
-        nextBtn.disabled = true;
-    } else {
-        nextBtn.disabled = false;
-        // Якщо ми повернулись назад, але наступний крок вже відкритий
         if (currentTimelineStep < maxUnlockedStep) {
             nextBtn.textContent = "Вперед ➔";
         } else {
