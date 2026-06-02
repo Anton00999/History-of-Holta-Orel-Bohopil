@@ -400,21 +400,29 @@ const historyData = [
     }
 ];
 
-let currentTimelineStep = 0;
-let maxUnlockedStep = 0;
+// Ключові дати: 1757, 1762, 1763, і фінальний рік таймлайну - 1765
+const milestones = [1757, 1762, 1763, 1765];
+let currentMilestoneIndex = 0;
 
-// --- ГЕНЕРАТОР ХАТИНОК ---
+// --- ГЕНЕРАТОР ДИНАМІЧНИХ ХАТИНОК ---
 function generateHouses() {
-    scatterHouses('settlement-bohopil', 380, 360, 35, 22);
-    scatterHouses('settlement-orel', 580, 320, 45, 50);
-    scatterHouses('settlement-holta', 510, 460, 35, 30);
+    // Орел: старт 1757, база 20, +5 на рік до 1765
+    scatterDynamicHouses('settlement-orel', 580, 320, 50, 20, 1757, 5);
+    // Голта: старт 1762, база 20, +5 на рік до 1765
+    scatterDynamicHouses('settlement-holta', 510, 460, 40, 20, 1762, 5);
+    // Богопіль: старт 1763, база 15, +5 на рік до 1765
+    scatterDynamicHouses('settlement-bohopil', 380, 360, 35, 15, 1763, 5);
 }
 
-function scatterHouses(groupId, cx, cy, radius, count) {
+function scatterDynamicHouses(groupId, cx, cy, radius, startCount, startYear, perYearCount) {
     const group = document.getElementById(groupId);
     if (!group) return;
 
-    for (let i = 0; i < count; i++) {
+    const maxYear = 1765;
+    const totalYears = maxYear - startYear;
+    const totalCount = startCount + (totalYears * perYearCount);
+
+    for (let i = 0; i < totalCount; i++) {
         const angle = Math.random() * Math.PI * 2;
         const r = Math.sqrt(Math.random()) * radius; 
         const x = cx + Math.cos(angle) * r;
@@ -424,7 +432,18 @@ function scatterHouses(groupId, cx, cy, radius, count) {
         useEl.setAttribute('href', '#tiny-house');
         useEl.setAttribute('x', x);
         useEl.setAttribute('y', y);
-        useEl.setAttribute('class', 'house-icon');
+        useEl.setAttribute('class', 'house-icon timeline-house');
+
+        // Математика: перші хати (база) з'являються одразу в стартовий рік
+        let appearYear = startYear;
+        if (i >= startCount) {
+            // Решта хат розподіляється рівномірно (наприклад 1757.2, 1757.4 і т.д.)
+            const extraIndex = i - startCount;
+            appearYear = startYear + (extraIndex / perYearCount);
+        }
+        
+        useEl.dataset.appearYear = appearYear;
+        useEl.style.opacity = '0'; // Ховаємо хатинки на старті
 
         const rotation = Math.random() * 40 - 20;
         useEl.setAttribute('transform', `rotate(${rotation} ${x} ${y})`);
@@ -433,103 +452,97 @@ function scatterHouses(groupId, cx, cy, radius, count) {
 }
 generateHouses();
 
-// --- ЛОГІКА ТАЙМЛАЙНУ ---
+// --- ЛОГІКА ПОВЗУНКА ---
+const slider = document.getElementById('year-slider');
+const yearDisplay = document.getElementById('year-display');
+const nextBtn = document.getElementById('next-event-btn');
+
 function initTimeline() {
     document.getElementById('bottom-timeline').classList.remove('hidden');
-    updateTimelineView();
+    updateTimelineView(1757);
 }
 
-function updateTimelineView() {
-    // Зберігаємо попередній крок, щоб знати, чи потрібен спалах
-    if (typeof window.lastStep === 'undefined') window.lastStep = -1;
+// Рух повзунка мишкою
+slider.addEventListener('input', (e) => {
+    let selectedYear = parseFloat(e.target.value);
+    const maxAllowedYear = milestones[currentMilestoneIndex];
 
-    // 1. Оновлюємо стан поселень на мапі
-    historyData.forEach((data, index) => {
-        const settlement = document.getElementById(`settlement-${data.id}`);
-        const scrollBtn = settlement.querySelector('.scroll-btn');
+    // Блокуємо рух у "майбутнє", яке ще не відкрито кнопкою
+    if (selectedYear > maxAllowedYear) {
+        selectedYear = maxAllowedYear;
+        slider.value = maxAllowedYear;
+    }
+    updateTimelineView(selectedYear);
+});
+
+// Кнопка "Наступна подія"
+nextBtn.addEventListener('click', () => {
+    if (currentMilestoneIndex < milestones.length - 1) {
+        currentMilestoneIndex++;
+        const targetYear = milestones[currentMilestoneIndex];
         
-        // Перевіряємо, чи було поселення прихованим ДО цього моменту
-        const wasHidden = settlement.classList.contains('timeline-hidden');
+        slider.value = targetYear;
+        updateTimelineView(targetYear);
 
-        if (index <= currentTimelineStep) {
-            // Якщо воно було приховане і саме зараз з'являється — робимо спалах!
-            if (wasHidden) {
-                settlement.classList.remove('flash-reveal');
-                void settlement.offsetWidth; // Магія перезапуску анімації
-                settlement.classList.add('flash-reveal');
-            }
-            settlement.classList.remove('timeline-hidden'); 
-        } else {
-            // Ховаємо ті, час яких ще не настав
-            settlement.classList.add('timeline-hidden'); 
+        if (currentMilestoneIndex === milestones.length - 1) {
+            nextBtn.disabled = true;
+        }
+    }
+});
+
+function updateTimelineView(currentYear) {
+    // Показуємо рік (відкидаємо десяткові)
+    yearDisplay.textContent = Math.floor(currentYear);
+
+    processSettlement('orel', 1757, currentYear);
+    processSettlement('holta', 1762, currentYear);
+    processSettlement('bohopil', 1763, currentYear);
+}
+
+function processSettlement(id, startYear, currentYear) {
+    const group = document.getElementById(`settlement-${id}`);
+    const scrollBtn = group.querySelector('.scroll-btn');
+
+    if (currentYear >= startYear) {
+        // Якщо поселення було приховане, робимо ЯДЕРНИЙ СПАЛАХ
+        const wasHidden = group.classList.contains('timeline-hidden');
+        if (wasHidden) {
+            group.classList.remove('timeline-hidden');
+            group.classList.remove('flash-reveal');
+            void group.offsetWidth; 
+            group.classList.add('flash-reveal');
         }
 
-        // Логіка сувою: показуємо іконку ТІЛЬКИ в той рік, про який іде мова
-        if (index === currentTimelineStep) {
+        // Пробігаємось по всіх хатах і показуємо ті, час яких настав
+        const houses = group.querySelectorAll('.timeline-house');
+        houses.forEach(house => {
+            const appearYear = parseFloat(house.dataset.appearYear);
+            if (currentYear >= appearYear) {
+                house.style.opacity = '1';
+            } else {
+                house.style.opacity = '0';
+            }
+        });
+
+        // Показуємо сувій ТІЛЬКИ протягом першого року від заснування
+        if (currentYear >= startYear && currentYear < startYear + 1) {
             scrollBtn.classList.remove('hidden');
         } else {
             scrollBtn.classList.add('hidden');
         }
-    });
 
-    window.lastStep = currentTimelineStep;
-
-    // 2. Оновлюємо вузли на нижній шкалі
-    const nodes = document.querySelectorAll('.timeline-node');
-    nodes.forEach((node, index) => {
-        node.classList.remove('active');
-        if (index === currentTimelineStep) node.classList.add('active');
-        
-        if (index <= maxUnlockedStep) {
-            node.classList.remove('locked');
-        }
-    });
-
-    // 3. Заповнюємо смугу прогресу
-    const progress = document.getElementById('timeline-progress');
-    progress.style.width = `${(currentTimelineStep / (historyData.length - 1)) * 100}%`;
-
-    // 4. Оновлюємо кнопку "Наступна подія"
-    const nextBtn = document.getElementById('next-event-btn');
-    if (currentTimelineStep === historyData.length - 1) {
-        nextBtn.disabled = true;
     } else {
-        nextBtn.disabled = false;
-        // Якщо користувач відмотав час назад
-        if (currentTimelineStep < maxUnlockedStep) {
-            nextBtn.textContent = "Вперед ➔";
-        } else {
-            nextBtn.textContent = "Наступна подія ➔";
-        }
+        // Ховаємо поселення повністю, якщо відмотали час назад
+        group.classList.add('timeline-hidden');
+        group.classList.remove('flash-reveal');
+        scrollBtn.classList.add('hidden');
     }
 }
-
-// Кнопка "Наступна подія"
-document.getElementById('next-event-btn').addEventListener('click', () => {
-    if (currentTimelineStep < historyData.length - 1) {
-        currentTimelineStep++;
-        if (currentTimelineStep > maxUnlockedStep) {
-            maxUnlockedStep = currentTimelineStep;
-        }
-        updateTimelineView();
-    }
-});
-
-// Кліки по самих роках на таймлайні (навігація)
-document.querySelectorAll('.timeline-node').forEach(node => {
-    node.addEventListener('click', function() {
-        const index = parseInt(this.getAttribute('data-index'));
-        if (index <= maxUnlockedStep) {
-            currentTimelineStep = index;
-            updateTimelineView();
-        }
-    });
-});
 
 // --- ЛОГІКА СУВОЇВ ТА ДОВІДКИ ---
 document.querySelectorAll('.scroll-btn').forEach(btn => {
     btn.addEventListener('click', function(e) {
-        e.stopPropagation(); // Щоб клік не йшов далі
+        e.stopPropagation(); 
         const parentId = this.parentElement.getAttribute('data-id');
         const data = historyData.find(d => d.id === parentId);
         
