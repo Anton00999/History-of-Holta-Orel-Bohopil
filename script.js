@@ -597,11 +597,18 @@ document.querySelectorAll('.scroll-btn').forEach(btn => {
         if (data) {
             document.getElementById('modal-title').textContent = data.title;
             document.getElementById('modal-text').textContent = data.text;
+            
+            // Відкриваємо панель
             document.getElementById('info-modal').classList.remove('hidden');
+            // Даємо команду сторінці "посунутися" вліво
+            document.body.classList.add('panel-open');
         }
     });
 });
 
 document.getElementById('close-modal').addEventListener('click', () => {
+    // Ховаємо панель
     document.getElementById('info-modal').classList.add('hidden');
+    // Повертаємо сторінку в центр
+    document.body.classList.remove('panel-open');
 });
