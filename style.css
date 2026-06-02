@@ -418,32 +418,73 @@ body.finale-water .line.ottoman { stroke: #0496ff; filter: drop-shadow(0 0 10px 
 .timeline-house.visible {
     opacity: 1 !important;
 }
-#info-modal {
-    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-    background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px);
-    display: flex; justify-content: center; align-items: center;
-    z-index: 1000; opacity: 1; transition: opacity 0.4s ease;
+/* --- АНІМАЦІЯ ЗСУВУ МАПИ ТА ТАЙМЛАЙНУ --- */
+#rivers-container {
+    transition: opacity 3s ease, transform 0.5s cubic-bezier(0.25, 1, 0.5, 1) !important;
 }
 
-#info-modal.hidden { opacity: 0; pointer-events: none; }
+#bottom-timeline {
+    transition: opacity 2s ease, transform 0.5s cubic-bezier(0.25, 1, 0.5, 1) !important;
+}
+
+/* Коли відкрита панель, зсуваємо мапу вліво рівно на половину ширини панелі (12.5%) */
+body.panel-open #rivers-container {
+    transform: translateX(-12.5vw);
+}
+
+/* Таймлайн вже посунутий на -50%, тому додаємо ще -12.5% */
+body.panel-open #bottom-timeline {
+    transform: translateX(calc(-50% - 12.5vw));
+}
+
+
+/* --- БІЧНА ПАНЕЛЬ ДОВІДКИ (ЗАМІСТЬ МОДАЛЬНОГО ВІКНА) --- */
+#info-modal {
+    position: fixed; 
+    top: 0; 
+    right: 0; 
+    width: 25vw; 
+    min-width: 320px; 
+    height: 100vh; 
+    background: rgba(11, 26, 42, 0.95); 
+    backdrop-filter: blur(15px); 
+    border-left: 2px solid #e94560; 
+    z-index: 1000; 
+    overflow-y: auto; 
+    box-shadow: -10px 0 30px rgba(0,0,0,0.6);
+    transform: translateX(0);
+    transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.3s ease;
+}
+
+#info-modal.hidden { 
+    transform: translateX(100%); 
+    opacity: 0;
+    pointer-events: none; 
+}
 
 .modal-content {
-    background: #16213e; padding: 40px; border-radius: 12px;
-    border: 2px solid #e94560; max-width: 600px; width: 90%;
-    color: #fff; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.8);
-    transform: translateY(0); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    padding: 40px 30px; 
+    width: 100%;
+    color: #fff; 
+    position: relative; 
+    box-sizing: border-box;
+    transform: none !important; 
+    background: transparent;
+    border: none;
+    box-shadow: none;
 }
-
-#info-modal.hidden .modal-content { transform: translateY(50px); }
 
 #close-modal {
     position: absolute; top: 15px; right: 20px; background: none; border: none;
-    color: #ccc; font-size: 2rem; cursor: pointer; transition: color 0.3s;
+    color: #ccc; font-size: 2.5rem; cursor: pointer; transition: color 0.3s;
 }
-#close-modal:hover { color: #e94560; }
-#modal-title { color: #f9a826; margin-top: 0; font-size: 2rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; }
-#modal-text { font-size: 1.1rem; line-height: 1.6; color: #e0e0e0; }
 
+#close-modal:hover { color: #e94560; }
+#modal-title { color: #f9a826; margin-top: 20px; font-size: 2rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; }
+#modal-text { font-size: 1.1rem; line-height: 1.6; color: #e0e0e0; padding-bottom: 40px; }
+
+
+/* --- ТУЛТІПИ ДЛЯ МАЙНДМАПИ (НЕ ВИДАЛЯТИ!) --- */
 .tooltip {
     position: absolute; background: rgba(10, 10, 20, 0.95); border: 2px solid #e94560; border-radius: 8px; padding: 12px;
     color: white; font-size: 0.95rem; pointer-events: none; opacity: 0; display: none; transition: opacity 0.3s;
