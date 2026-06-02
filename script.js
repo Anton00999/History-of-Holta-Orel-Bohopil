@@ -410,7 +410,6 @@ const historyData = [
     }
 ];
 
-// ІДЕАЛЬНО ВИВІРЕНІ ТОЧКИ ЗУПИНКИ: 1764.5 для Шанця
 const milestones = [1756, 1757, 1762, 1763, 1763.9, 1764.5, 1765];
 let currentMilestoneIndex = 0;
 
@@ -582,7 +581,7 @@ nextBtn.addEventListener('click', () => {
         else if (targetYear === 1762) idToOpen = 'holta';
         else if (targetYear === 1763) idToOpen = 'bohopil';
         else if (targetYear === 1763.9) idToOpen = 'attack';
-        else if (targetYear === 1764.5) idToOpen = 'fort'; // ТОЧНО 1764.5
+        else if (targetYear === 1764.5) idToOpen = 'fort';
         
         if (idToOpen) {
             openInfoPanel(idToOpen);
@@ -593,13 +592,15 @@ nextBtn.addEventListener('click', () => {
     }
 });
 
-    // ТУТ ЗАДАНІ ПРАВИЛЬНІ ДІАПАЗОНИ СУВОЇВ ДЛЯ КОЖНОЇ ПОДІЇ
+function updateTimelineView(currentYear) {
+    yearDisplay.textContent = Math.floor(currentYear); // Завжди виводимо лише рік
+
     processSettlement('orel', 1757, 1762, currentYear);
     processSettlement('holta', 1762, 1763, currentYear);
     processSettlement('bohopil', 1763, 1763.9, currentYear);
-    processSettlement('fort', 1764.5, 1766, currentYear); // Від 1764.5 до кінця
+    processSettlement('fort', 1764.5, 1766, currentYear); 
     
-    processAttackEvent('attack', 1763.9, 1764.5, currentYear); // Від атаки рівно до форту
+    processAttackEvent('attack', 1763.9, 1764.5, currentYear); 
     
     if (currentYear < 1757) {
         nextBtn.textContent = "Почати ➔";
