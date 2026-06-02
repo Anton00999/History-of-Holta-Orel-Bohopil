@@ -539,6 +539,7 @@ function updateTimelineView(currentYear) {
     processSettlement('orel', 1757, currentYear);
     processSettlement('holta', 1762, currentYear);
     processSettlement('bohopil', 1763, currentYear);
+    processSettlement('fort', 1764, currentYear);
 }
 
 function processSettlement(id, startYear, currentYear) {
