@@ -254,15 +254,22 @@ body.finale-water .line.ottoman { stroke: #0496ff; filter: drop-shadow(0 0 10px 
 
 /* --- ІНТЕРАКТИВНІ ПОСЕЛЕННЯ ТА СУВОЇ --- */
 .settlement-group {
-    opacity: 1; transition: opacity 1.5s ease, filter 1s ease;
+    opacity: 1; 
+    transition: opacity 1.5s ease;
 }
 
-/* Клас для приховування майбутніх подій */
+/* ВАЖЛИВО: !important жорстко забороняє показувати поселення до їхньої черги */
 .settlement-group.timeline-hidden {
-    opacity: 0; pointer-events: none;
+    opacity: 0 !important; 
+    pointer-events: none !important;
 }
 
 .hitbox { cursor: default; pointer-events: none; }
+
+/* Хітбокси працюють ТІЛЬКИ у відкритих поселеннях */
+#rivers-container.show-rivers .settlement-group:not(.timeline-hidden) .hitbox {
+    pointer-events: all; 
+}
 
 .settlement-label {
     fill: rgba(255, 255, 255, 0.5); font-size: 32px; font-weight: bold;
@@ -274,7 +281,7 @@ body.finale-water .line.ottoman { stroke: #0496ff; filter: drop-shadow(0 0 10px 
     fill: rgba(255, 255, 255, 0.4); transition: all 0.4s ease; pointer-events: none; 
 }
 
-/* Сяйво при наведенні на будь-яке відкрите поселення в будь-який час */
+/* Сяйво при наведенні курсором на відкриті поселення */
 #rivers-container.show-rivers .settlement-group:not(.timeline-hidden):hover .house-icon {
     fill: #fff; filter: drop-shadow(0 0 5px #fff);
 }
@@ -282,15 +289,16 @@ body.finale-water .line.ottoman { stroke: #0496ff; filter: drop-shadow(0 0 10px 
     fill: #fff; filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8)); font-size: 34px;
 }
 
-/* Анімація яскравого спалаху при появі нового поселення */
+/* ГАРНА АНІМАЦІЯ ПОЯВИ (Виїзд знизу + Золотий спалах) */
 @keyframes settlementFlash {
-    0% { filter: drop-shadow(0 0 0px #fff) brightness(1); }
-    30% { filter: drop-shadow(0 0 20px #fff) brightness(2); }
-    100% { filter: drop-shadow(0 0 5px #fff) brightness(1); }
+    0% { filter: drop-shadow(0 0 0px #fff) brightness(1); opacity: 0; transform: translateY(15px); }
+    30% { filter: drop-shadow(0 0 30px #f9a826) brightness(2.5); opacity: 1; transform: translateY(0); }
+    100% { filter: drop-shadow(0 0 5px #fff) brightness(1); opacity: 1; transform: translateY(0); }
 }
+
 .settlement-group.flash-reveal .house-icon,
 .settlement-group.flash-reveal .settlement-label {
-    animation: settlementFlash 1.5s ease-out forwards;
+    animation: settlementFlash 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
 }
 
 /* Кнопка-сувій */
@@ -299,13 +307,13 @@ body.finale-water .line.ottoman { stroke: #0496ff; filter: drop-shadow(0 0 10px 
     transition: filter 0.3s ease, opacity 0.5s ease;
     filter: drop-shadow(0 0 3px rgba(249, 168, 38, 0.8));
 }
-/* Замість "трясучого" scale використовуємо яскраве світіння */
 .scroll-btn:hover {
     filter: drop-shadow(0 0 15px #f9a826) brightness(1.5);
 }
-/* Клас для зникнення сувою */
+
+/* Приховуємо сувій, якщо подія вже минула */
 .scroll-btn.hidden {
-    opacity: 0; pointer-events: none;
+    opacity: 0 !important; pointer-events: none !important;
 }
 
 /* --- НИЖНІЙ ТАЙМЛАЙН --- */
