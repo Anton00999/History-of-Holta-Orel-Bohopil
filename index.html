@@ -22,12 +22,16 @@
     <div id="rivers-container">
         <svg viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid meet" class="stylized-river">
             <defs>
+                <!-- ... твої старі фільтри та іконки ... -->
                 <filter id="waterGlow" x="-20%" y="-20%" width="140%" height="140%">
                     <feGaussianBlur stdDeviation="12" result="blur" />
                     <feComposite in="SourceGraphic" in2="blur" operator="over" />
                 </filter>
                 
                 <path id="tiny-house" d="M0,-3 L3,0 L3,4 L-3,4 L-3,0 Z" />
+                
+                <!-- ДОДАНО: Контур 6-кутного зірчастого бастіонного форту -->
+                <path id="star-fort" d="M 0,-20 L 6,-10 L 17,-10 L 12,0 L 17,10 L 6,10 L 0,20 L -6,10 L -17,10 L -12,0 L -17,-10 L -6,-10 Z" />
                 
                 <g id="scroll-icon">
                     <rect x="-10" y="-12" width="20" height="24" rx="2" fill="rgba(22, 33, 62, 0.9)" stroke="#f9a826" stroke-width="2"/>
