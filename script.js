@@ -386,7 +386,7 @@ const historyData = [
     {
         id: 'orel',
         title: "Орел (1757)",
-        text: "Слобода Орел заснована на лівому березі Південного Бугу. Російська імперія цілеспрямовано будувала тут форпост для захисту від татарських набігів та поступової колонізації степу. Орел стал центром сотні Новослобідського козацького полку."
+        text: "Слобода Орел заснована на лівому березі Південного Бугу. Російська імперія цілеспрямовано будувала тут форпост для захисту від татарських набігів та поступової колонізації степу. Орел став центром сотні Новослобідського козацького полку."
     },
     {
         id: 'holta',
@@ -396,7 +396,7 @@ const historyData = [
     {
         id: 'bohopil',
         title: "Богопіль (1763)",
-        text: "Реагуючи на активність сусідів, Річ Посполита закріплює свою присутність у межиріччі. За наказом графа Станіслава Потоцького тут закладається укріплений маєток Богопіль, який став митним та торговельним центром Брацлавського воєводства."
+        text: "Реагуючи на активність сусідів, Річ Посполита закріплює свою присутність у межиріччі. За наказом графа Станіслава Потоцького тут закладається укріплений маєток Богопіль, який стал митним та торговельним центром Брацлавського воєводства."
     }
 ];
 
@@ -437,7 +437,7 @@ function scatterDynamicHouses(groupId, cx, cy, radius, startCount, startYear, pe
         }
         
         useEl.dataset.appearYear = appearYear;
-        useEl.style.opacity = '0'; 
+        // ЗМІНЕНО: Повністю видалено useEl.style.opacity = '0', бо воно ламало логіку CSS класу
 
         const rotation = Math.random() * 40 - 20;
         useEl.setAttribute('transform', `rotate(${rotation} ${x} ${y})`);
@@ -548,8 +548,12 @@ function processSettlement(id, startYear, currentYear) {
             group.classList.add('flash-reveal');
         }
 
-        const houses = group.querySelectorAll('.timeline-house');
-        houses.forEach(house => {
+        // КЕШУВАННЯ (ОПТИМІЗАЦІЯ ДЛЯ 60-144 FPS): Шукаємо хатки лише один раз, а не кожен кадр анімації!
+        if (!group.cachedHouses) {
+            group.cachedHouses = group.querySelectorAll('.timeline-house');
+        }
+
+        group.cachedHouses.forEach(house => {
             const appearYear = parseFloat(house.dataset.appearYear);
             const shouldShow = currentYear >= appearYear;
             
@@ -569,8 +573,10 @@ function processSettlement(id, startYear, currentYear) {
         group.classList.remove('flash-reveal');
         scrollBtn.classList.add('hidden');
         
-        const houses = group.querySelectorAll('.timeline-house');
-        houses.forEach(house => house.classList.remove('visible'));
+        if (!group.cachedHouses) {
+            group.cachedHouses = group.querySelectorAll('.timeline-house');
+        }
+        group.cachedHouses.forEach(house => house.classList.remove('visible'));
     }
 }
 
