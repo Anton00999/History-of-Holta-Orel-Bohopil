@@ -568,16 +568,36 @@ function processSettlement(id, startYear, currentYear) {
             group.classList.add('flash-reveal');
         }
 
-        // Логіка хатинок: вмикаємо прозорість, якщо час хатинки настав
+        // ОПТИМІЗАЦІЯ: Змінюємо стан хатинок тільки якщо це дійсно потрібно
         const houses = group.querySelectorAll('.timeline-house');
         houses.forEach(house => {
             const appearYear = parseFloat(house.dataset.appearYear);
-            if (currentYear >= appearYear) {
-                house.style.opacity = '1';
-            } else {
-                house.style.opacity = '0';
+            const shouldShow = currentYear >= appearYear;
+            
+            // Перевіряємо поточний стан, щоб уникати зайвих перемальовувань DOM
+            if (house.classList.contains('visible') !== shouldShow) {
+                house.classList.toggle('visible', shouldShow);
             }
         });
+
+        // Показуємо сувій лише протягом першого року
+        if (currentYear >= startYear && currentYear < startYear + 1) {
+            scrollBtn.classList.remove('hidden');
+        } else {
+            scrollBtn.classList.add('hidden');
+        }
+
+    } else {
+        // Ховаємо поселення повністю, якщо відмотали час назад
+        group.classList.add('timeline-hidden');
+        group.classList.remove('flash-reveal');
+        scrollBtn.classList.add('hidden');
+        
+        // Миттєво приховуємо хати без навантаження на процесор
+        const houses = group.querySelectorAll('.timeline-house');
+        houses.forEach(house => house.classList.remove('visible'));
+    }
+}
 
         // Показуємо сувій лише протягом першого року від дати заснування (напр. 1757.0 - 1757.9)
         if (currentYear >= startYear && currentYear < startYear + 1) {
