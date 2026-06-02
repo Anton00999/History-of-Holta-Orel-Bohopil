@@ -593,13 +593,6 @@ nextBtn.addEventListener('click', () => {
     }
 });
 
-function updateTimelineView(currentYear) {
-    if (currentYear >= 1763.9 && currentYear < 1764.5) {
-        yearDisplay.textContent = "1763";
-    } else {
-        yearDisplay.textContent = Math.floor(currentYear);
-    }
-
     // ТУТ ЗАДАНІ ПРАВИЛЬНІ ДІАПАЗОНИ СУВОЇВ ДЛЯ КОЖНОЇ ПОДІЇ
     processSettlement('orel', 1757, 1762, currentYear);
     processSettlement('holta', 1762, 1763, currentYear);
