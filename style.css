@@ -524,14 +524,16 @@ body.panel-open #bottom-timeline {
     to { stroke-dashoffset: 0; }
 }
 
-/* Мерехтіння вогнищ */
+/* Мерехтіння вогнищ - ВИПРАВЛЕНО (Локальна трансформація) */
 .fire-anim {
+    /* Ця властивість критично важлива! Змушує анімацію працювати відносно самої іконки, а не всього SVG-полотна */
+    transform-box: fill-box; 
     transform-origin: center bottom;
-    animation: flicker 0.5s infinite alternate ease-in-out;
-    filter: drop-shadow(0 0 8px #ff5722);
+    animation: flicker 0.4s infinite alternate ease-in-out;
+    filter: drop-shadow(0 0 5px #ff5722);
 }
 
 @keyframes flicker {
-    0% { transform: scale(1) rotate(-5deg); fill: #ff5722; filter: drop-shadow(0 0 5px #ff5722); }
-    100% { transform: scale(1.3) rotate(5deg); fill: #ffeb3b; filter: drop-shadow(0 0 15px #ffeb3b); }
+    0% { transform: scale(0.9) skewX(-3deg); fill: #ff5722; filter: drop-shadow(0 0 5px #ff5722); }
+    100% { transform: scale(1.1) skewX(3deg); fill: #ffeb3b; filter: drop-shadow(0 0 12px #ffeb3b); }
 }
