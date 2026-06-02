@@ -440,28 +440,63 @@ function initTimeline() {
 }
 
 function updateTimelineView() {
-    // Зберігаємо попередній крок, щоб знати, чи потрібен спалах
-    if (typeof window.lastStep === 'undefined') window.lastStep = -1;
-
     // 1. Оновлюємо стан поселень на мапі
     historyData.forEach((data, index) => {
         const settlement = document.getElementById(`settlement-${data.id}`);
         const scrollBtn = settlement.querySelector('.scroll-btn');
+        
+        // Перевіряємо, чи було поселення прихованим ДО цього моменту
+        const wasHidden = settlement.classList.contains('timeline-hidden');
 
-        // Логіка поселень: показуємо всі поселення, рік яких вже настав або пройшов
         if (index <= currentTimelineStep) {
-            settlement.classList.remove('timeline-hidden'); 
-            
-            // Якщо це нове поселення, яке ми тільки-но відкрили - робимо спалах
-            if (index === currentTimelineStep && currentTimelineStep > window.lastStep) {
+            // Якщо воно було приховане і саме зараз з'являється — робимо спалах!
+            if (wasHidden) {
                 settlement.classList.remove('flash-reveal');
-                void settlement.offsetWidth; // Магія для перезапуску CSS-анімації
+                void settlement.offsetWidth; // Магія перезапуску анімації
                 settlement.classList.add('flash-reveal');
             }
+            settlement.classList.remove('timeline-hidden'); 
         } else {
-            // Поселення з майбутнього залишаються прихованими
+            // Ховаємо ті, час яких ще не настав
             settlement.classList.add('timeline-hidden'); 
         }
+
+        // Логіка сувою: показуємо іконку ТІЛЬКИ в той рік, про який іде мова
+        if (index === currentTimelineStep) {
+            scrollBtn.classList.remove('hidden');
+        } else {
+            scrollBtn.classList.add('hidden');
+        }
+    });
+
+    // 2. Оновлюємо вузли на нижній шкалі
+    const nodes = document.querySelectorAll('.timeline-node');
+    nodes.forEach((node, index) => {
+        node.classList.remove('active');
+        if (index === currentTimelineStep) node.classList.add('active');
+        
+        if (index <= maxUnlockedStep) {
+            node.classList.remove('locked');
+        }
+    });
+
+    // 3. Заповнюємо смугу прогресу
+    const progress = document.getElementById('timeline-progress');
+    progress.style.width = `${(currentTimelineStep / (historyData.length - 1)) * 100}%`;
+
+    // 4. Оновлюємо кнопку "Наступна подія"
+    const nextBtn = document.getElementById('next-event-btn');
+    if (currentTimelineStep === historyData.length - 1) {
+        nextBtn.disabled = true;
+    } else {
+        nextBtn.disabled = false;
+        if (currentTimelineStep < maxUnlockedStep) {
+            nextBtn.textContent = "Вперед ➔";
+        } else {
+            nextBtn.textContent = "Наступна подія ➔";
+        }
+    }
+}
 
         // Логіка сувою: показуємо іконку ТІЛЬКИ в той рік, про який іде мова
         if (index === currentTimelineStep) {
