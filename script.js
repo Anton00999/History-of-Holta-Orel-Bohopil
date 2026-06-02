@@ -596,19 +596,20 @@ nextBtn.addEventListener('click', () => {
 });
 
 function updateTimelineView(currentYear) {
-    if (currentYear >= 1763.9 && currentYear < 1764) {
-        yearDisplay.textContent = "Груд. 1763";
+    // ЗМІНЕНО: Відображаємо "Груд. 1763" рівно до появи форту в середині 1764
+    if (currentYear >= 1763.9 && currentYear < 1764.5) {
+        yearDisplay.textContent = "1763";
     } else {
         yearDisplay.textContent = Math.floor(currentYear);
     }
 
-    // ЗМІНЕНО: Передаємо ТРЕТІМ аргументом рік НАСТУПНОЇ події, щоб сувій зникав рівно в цей момент
     processSettlement('orel', 1757, 1762, currentYear);
     processSettlement('holta', 1762, 1763, currentYear);
     processSettlement('bohopil', 1763, 1763.9, currentYear);
-    processSettlement('fort', 1764, 1766, currentYear); // 1766 - щоб сувій форту лишався до кінця повзунка
+    processSettlement('fort', 1764.5, 1766, currentYear); // ЗМІНЕНО на 1764.5
     
-    processAttackEvent('attack', 1763.9, 1764, currentYear); 
+    // Твій виклик тепер абсолютно правильний
+    processAttackEvent('attack', 1763.9, 1764.5, currentYear); 
     
     if (currentYear < 1757) {
         nextBtn.textContent = "Почати ➔";
@@ -664,13 +665,14 @@ function processSettlement(id, startYear, endYear, currentYear) {
     }
 }
 
-// ЗМІНЕНО: Жорстка логіка зникнення для вогню та стрілки
-function processAttackEvent(currentYear) {
-    const attackGroup = document.getElementById('event-attack');
+function processAttackEvent(id, startYear, endYear, currentYear) {
+    const attackGroup = document.getElementById(`event-${id}`);
+    if (!attackGroup) return; // Захист від помилок
+    
     const scrollBtn = attackGroup.querySelector('.scroll-btn');
 
-    // Вогонь і стрілка активні з моменту нападу (1763.9) і зникають РІВНО в момент появи Форту (1764)
-    if (currentYear >= 1763.9 && currentYear < 1764) {
+    // Логіка увімкнення та вимкнення події за заданими роками
+    if (currentYear >= startYear && currentYear < endYear) {
         attackGroup.classList.remove('timeline-hidden');
         scrollBtn.classList.remove('hidden');
     } else {
@@ -679,20 +681,6 @@ function processAttackEvent(currentYear) {
     }
 }
 
-// ДОДАНО: Логіка видимості стрілки та пожежі
-function processAttackEvent(currentYear) {
-    const attackGroup = document.getElementById('event-attack');
-    const scrollBtn = attackGroup.querySelector('.scroll-btn');
-
-    // Вогонь і стрілка активні з кінця 1763 до середини 1764
-    if (currentYear >= 1763.9 && currentYear < 1764.5) {
-        attackGroup.classList.remove('timeline-hidden');
-        scrollBtn.classList.remove('hidden');
-    } else {
-        attackGroup.classList.add('timeline-hidden');
-        scrollBtn.classList.add('hidden');
-    }
-}
 
 // --- ЛОГІКА СУВОЇВ ТА ДОВІДКИ ---
 document.querySelectorAll('.scroll-btn').forEach(btn => {
