@@ -389,6 +389,11 @@ const historyData = [
         text: "Слобода Орел заснована на лівому березі Південного Бугу. Російська імперія цілеспрямовано будувала тут форпост для захисту від татарських набігів та поступової колонізації степу. Орел став центром сотні Новослобідського козацького полку."
     },
     {
+        id: 'attack-orel',
+        title: "Напад на Орел (1761)",
+        text: "Запорозьке козацтво не терпіло імперської колонізації своїх земель. Бугогардівський полковник здійснив блискавичний рейд на Орел зі сторони Гарду. Поселення було пограбовано, людність розігнано, а десятки хат — спалено дотла."
+    },
+    {
         id: 'holta',
         title: "Голта (1762)",
         text: "Ханська слобода Голта виникла на правому березі Південного Бугу. Османська імперія заклала це поселення для контролю над стратегічно важливою переправою. Територія формально належала Кримському ханству, васалу Османів."
@@ -410,7 +415,8 @@ const historyData = [
     }
 ];
 
-const milestones = [1756, 1757, 1762, 1763, 1763.9, 1764.5, 1765];
+// ДОДАНО: 1761 рік
+const milestones = [1756, 1757, 1761, 1762, 1763, 1763.9, 1764.5, 1765];
 let currentMilestoneIndex = 0;
 
 // --- ГЕНЕРАТОР ДИНАМІЧНИХ ХАТИНОК ---
@@ -448,7 +454,9 @@ function scatterDynamicHouses(groupId, cx, cy, radius, startCount, startYear, pe
         
         let destroyYear = null;
         if (groupId === 'settlement-bohopil' && i < 6) {
-            destroyYear = 1763.9;
+            destroyYear = 1763.9; // Богопіль: знищено 6 хат
+        } else if (groupId === 'settlement-orel' && i < 20) {
+            destroyYear = 1761; // Орел: знищено перші 20 хат під час нападу Гарду
         }
 
         useEl.dataset.appearYear = appearYear;
@@ -473,6 +481,7 @@ function focusCamera(id) {
     const cameraPositions = {
         'start': { x: '0%', y: '0%', scale: 1 }, 
         'orel': { x: '-8%', y: '5%', scale: 1.3 }, 
+        'attack-orel': { x: '-12%', y: '0%', scale: 1.4 }, // Зсув камери на лінію атаки з Гарду
         'holta': { x: '-2%', y: '-8%', scale: 1.3 }, 
         'bohopil': { x: '8%', y: '2%', scale: 1.3 }, 
         'attack': { x: '2%', y: '1%', scale: 1.4 }, 
@@ -578,6 +587,7 @@ nextBtn.addEventListener('click', () => {
 
         let idToOpen = null;
         if (targetYear === 1757) idToOpen = 'orel';
+        else if (targetYear === 1761) idToOpen = 'attack-orel'; // ДОДАНО
         else if (targetYear === 1762) idToOpen = 'holta';
         else if (targetYear === 1763) idToOpen = 'bohopil';
         else if (targetYear === 1763.9) idToOpen = 'attack';
@@ -593,13 +603,15 @@ nextBtn.addEventListener('click', () => {
 });
 
 function updateTimelineView(currentYear) {
-    yearDisplay.textContent = Math.floor(currentYear); // Завжди виводимо лише рік
+    yearDisplay.textContent = Math.floor(currentYear); 
 
-    processSettlement('orel', 1757, 1762, currentYear);
+    processSettlement('orel', 1757, 1761, currentYear); // Сувій Орла активний до 1761
     processSettlement('holta', 1762, 1763, currentYear);
     processSettlement('bohopil', 1763, 1763.9, currentYear);
     processSettlement('fort', 1764.5, 1766, currentYear); 
     
+    // Передаємо логіку відображення обох атак
+    processAttackEvent('attack-orel', 1761, 1762, currentYear); 
     processAttackEvent('attack', 1763.9, 1764.5, currentYear); 
     
     if (currentYear < 1757) {
