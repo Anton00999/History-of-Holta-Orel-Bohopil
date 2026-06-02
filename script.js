@@ -596,18 +596,19 @@ nextBtn.addEventListener('click', () => {
 });
 
 function updateTimelineView(currentYear) {
-    // ЗМІНЕНО: Спеціальний текст для грудня 1763
     if (currentYear >= 1763.9 && currentYear < 1764) {
         yearDisplay.textContent = "Груд. 1763";
     } else {
         yearDisplay.textContent = Math.floor(currentYear);
     }
 
-    processSettlement('orel', 1757, currentYear);
-    processSettlement('holta', 1762, currentYear);
-    processSettlement('bohopil', 1763, currentYear);
-    processSettlement('fort', 1764, currentYear);
-    processAttackEvent(currentYear); // ДОДАНО: Обробка нападу
+    // ЗМІНЕНО: Передаємо ТРЕТІМ аргументом рік НАСТУПНОЇ події, щоб сувій зникав рівно в цей момент
+    processSettlement('orel', 1757, 1762, currentYear);
+    processSettlement('holta', 1762, 1763, currentYear);
+    processSettlement('bohopil', 1763, 1763.9, currentYear);
+    processSettlement('fort', 1764, 1766, currentYear); // 1766 - щоб сувій форту лишався до кінця повзунка
+    
+    processAttackEvent(currentYear); 
     
     if (currentYear < 1757) {
         nextBtn.textContent = "Почати ➔";
@@ -616,7 +617,7 @@ function updateTimelineView(currentYear) {
     }
 }
 
-function processSettlement(id, startYear, currentYear) {
+function processSettlement(id, startYear, endYear, currentYear) {
     const group = document.getElementById(`settlement-${id}`);
     const scrollBtn = group.querySelector('.scroll-btn');
 
@@ -635,7 +636,6 @@ function processSettlement(id, startYear, currentYear) {
 
         group.cachedHouses.forEach(house => {
             const appearYear = parseFloat(house.dataset.appearYear);
-            // ЗМІНЕНО: Перевіряємо, чи не спалили цю хату!
             const destroyYear = house.dataset.destroyYear ? parseFloat(house.dataset.destroyYear) : Infinity;
             
             const shouldShow = (currentYear >= appearYear) && (currentYear < destroyYear);
@@ -645,7 +645,8 @@ function processSettlement(id, startYear, currentYear) {
             }
         });
 
-        if (currentYear >= startYear && currentYear < startYear + 1) {
+        // ЗМІНЕНО: Сувій показується рівно до початку наступної ключової події (endYear)
+        if (currentYear >= startYear && currentYear < endYear) {
             scrollBtn.classList.remove('hidden');
         } else {
             scrollBtn.classList.add('hidden');
@@ -660,6 +661,21 @@ function processSettlement(id, startYear, currentYear) {
             group.cachedHouses = group.querySelectorAll('.timeline-house');
         }
         group.cachedHouses.forEach(house => house.classList.remove('visible'));
+    }
+}
+
+// ЗМІНЕНО: Жорстка логіка зникнення для вогню та стрілки
+function processAttackEvent(currentYear) {
+    const attackGroup = document.getElementById('event-attack');
+    const scrollBtn = attackGroup.querySelector('.scroll-btn');
+
+    // Вогонь і стрілка активні з моменту нападу (1763.9) і зникають РІВНО в момент появи Форту (1764)
+    if (currentYear >= 1763.9 && currentYear < 1764) {
+        attackGroup.classList.remove('timeline-hidden');
+        scrollBtn.classList.remove('hidden');
+    } else {
+        attackGroup.classList.add('timeline-hidden');
+        scrollBtn.classList.add('hidden');
     }
 }
 
