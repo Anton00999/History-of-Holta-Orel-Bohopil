@@ -399,16 +399,16 @@ const historyData = [
         text: "Реагуючи на активність сусідів, Річ Посполита закріплює свою присутність у межиріччі. За наказом графа Станіслава Потоцького тут закладається укріплений маєток Богопіль, який став митним та торговельним центром Брацлавського воєводства."
     },
     {
-        // ДОДАНО: Інформація про шанець
         id: 'fort',
         title: "Шанець (1764)",
         text: "Зліва від слободи Орел споруджується земляне укріплення бастіонного типу у формі шестикутної зірки. Цей шанець мав на меті посилити військову присутність імперії на кордоні та захистити стратегічну переправу через Південний Буг."
     }
 ];
 
-// ДОДАНО 1764 рік до ключових дат
-const milestones = [1757, 1762, 1763, 1764, 1765];
+// ЗМІНЕНО: Починаємо з 1756 року!
+const milestones = [1756, 1757, 1762, 1763, 1764, 1765];
 let currentMilestoneIndex = 0;
+
 // --- ГЕНЕРАТОР ДИНАМІЧНИХ ХАТИНОК ---
 function generateHouses() {
     scatterDynamicHouses('settlement-orel', 580, 320, 50, 20, 1757, 5);
@@ -443,7 +443,6 @@ function scatterDynamicHouses(groupId, cx, cy, radius, startCount, startYear, pe
         }
         
         useEl.dataset.appearYear = appearYear;
-        // ЗМІНЕНО: Повністю видалено useEl.style.opacity = '0', бо воно ламало логіку CSS класу
 
         const rotation = Math.random() * 40 - 20;
         useEl.setAttribute('transform', `rotate(${rotation} ${x} ${y})`);
@@ -452,14 +451,32 @@ function scatterDynamicHouses(groupId, cx, cy, radius, startCount, startYear, pe
 }
 generateHouses();
 
-// --- ЛОГІКА ПОВЗУНКА ---
+// --- ЛОГІКА ПОВЗУНКА ТА КАМЕРИ ---
 const slider = document.getElementById('year-slider');
 const yearDisplay = document.getElementById('year-display');
 const nextBtn = document.getElementById('next-event-btn');
 
 let isAnimating = false; 
 
-// --- ДОПІМІЖНІ ФУНКЦІЇ ДЛЯ ПАНЕЛІ ---
+// ДОДАНО: Керування фокусом камери
+function focusCamera(id) {
+    const rc = document.getElementById('rivers-container');
+    // Обчислені координати для ідеального центрування кожного поселення
+    const cameraPositions = {
+        'start': { x: '0%', y: '0%', scale: 1 }, 
+        'orel': { x: '-8%', y: '5%', scale: 1.3 }, 
+        'holta': { x: '-2%', y: '-8%', scale: 1.3 }, 
+        'bohopil': { x: '8%', y: '2%', scale: 1.3 }, 
+        'fort': { x: '5%', y: '8%', scale: 1.3 }, 
+        'end': { x: '0%', y: '0%', scale: 1 } 
+    };
+    
+    const cam = cameraPositions[id] || cameraPositions['start'];
+    rc.style.setProperty('--cam-x', cam.x);
+    rc.style.setProperty('--cam-y', cam.y);
+    rc.style.setProperty('--cam-scale', cam.scale);
+}
+
 function openInfoPanel(id) {
     const data = historyData.find(d => d.id === id);
     if (data) {
@@ -474,14 +491,13 @@ function closeInfoPanel() {
     document.getElementById('info-modal').classList.add('hidden');
     document.body.classList.remove('panel-open');
 }
-// ------------------------------------
 
 function generateSliderMarkers() {
     const markerContainer = document.getElementById('slider-markers');
     if (!markerContainer) return;
     
     markerContainer.innerHTML = '';
-    const minYear = 1757;
+    const minYear = 1756; // ЗМІНЕНО: Початок маркування з 1756
     const maxYear = 1765;
     
     milestones.forEach(year => {
@@ -496,7 +512,7 @@ generateSliderMarkers();
 
 function initTimeline() {
     document.getElementById('bottom-timeline').classList.remove('hidden');
-    updateTimelineView(1757);
+    updateTimelineView(1756); // ЗМІНЕНО: Стартуємо з порожнього поля
 }
 
 slider.addEventListener('input', (e) => {
@@ -509,8 +525,9 @@ slider.addEventListener('input', (e) => {
     }
     updateTimelineView(selectedYear);
     
-    // ДОДАНО: Як тільки користувач торкається повзунка - панель ховається
     closeInfoPanel();
+    // Повертаємо загальний вигляд, коли користувач вільно скролить
+    focusCamera('start'); 
 });
 
 function animateSlider(startVal, endVal, duration) {
@@ -551,7 +568,7 @@ nextBtn.addEventListener('click', () => {
         
         animateSlider(startYear, targetYear, 1500); 
 
-        // ДОДАНО: Визначаємо, яка подія настала, і одразу відкриваємо її довідку
+        // Логіка фокусу камери та відкриття довідки
         let idToOpen = null;
         if (targetYear === 1757) idToOpen = 'orel';
         else if (targetYear === 1762) idToOpen = 'holta';
@@ -560,6 +577,9 @@ nextBtn.addEventListener('click', () => {
         
         if (idToOpen) {
             openInfoPanel(idToOpen);
+            focusCamera(idToOpen);
+        } else {
+            focusCamera('end'); // Віддаляємо камеру в кінці
         }
     }
 });
@@ -571,6 +591,13 @@ function updateTimelineView(currentYear) {
     processSettlement('holta', 1762, currentYear);
     processSettlement('bohopil', 1763, currentYear);
     processSettlement('fort', 1764, currentYear);
+    
+    // Зміна тексту кнопки
+    if (currentYear < 1757) {
+        nextBtn.textContent = "Почати ➔";
+    } else {
+        nextBtn.textContent = "Наступна подія ➔";
+    }
 }
 
 function processSettlement(id, startYear, currentYear) {
@@ -623,7 +650,11 @@ document.querySelectorAll('.scroll-btn').forEach(btn => {
         e.stopPropagation(); 
         const parentId = this.parentElement.getAttribute('data-id');
         openInfoPanel(parentId);
+        focusCamera(parentId); // Наближаємо при ручному кліку на сувій
     });
 });
 
-document.getElementById('close-modal').addEventListener('click', closeInfoPanel);
+document.getElementById('close-modal').addEventListener('click', () => {
+    closeInfoPanel();
+    focusCamera('start'); // Повертаємо камеру назад при закритті довідки
+});
