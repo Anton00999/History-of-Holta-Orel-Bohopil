@@ -502,3 +502,36 @@ body.panel-open #bottom-timeline {
 .tooltip th { color: #e94560; font-weight: bold; width: 90px; }
 .tooltip td { color: #ccc; }
 .tooltip tr:last-child th, .tooltip tr:last-child td { border-bottom: none; }
+
+
+/* --- АНІМАЦІЇ ДЛЯ НАПАДУ (1763.9) --- */
+#event-attack {
+    transition: opacity 0.5s ease;
+}
+
+#event-attack.timeline-hidden {
+    opacity: 0 !important; visibility: hidden !important; pointer-events: none !important;
+}
+
+/* Анімація руху стрілки */
+.attack-arrow {
+    animation: moveArrow 1s linear infinite;
+    filter: drop-shadow(0 0 5px rgba(233, 69, 96, 0.8));
+}
+
+@keyframes moveArrow {
+    from { stroke-dashoffset: 20; }
+    to { stroke-dashoffset: 0; }
+}
+
+/* Мерехтіння вогнищ */
+.fire-anim {
+    transform-origin: center bottom;
+    animation: flicker 0.5s infinite alternate ease-in-out;
+    filter: drop-shadow(0 0 8px #ff5722);
+}
+
+@keyframes flicker {
+    0% { transform: scale(1) rotate(-5deg); fill: #ff5722; filter: drop-shadow(0 0 5px #ff5722); }
+    100% { transform: scale(1.3) rotate(5deg); fill: #ffeb3b; filter: drop-shadow(0 0 15px #ffeb3b); }
+}
