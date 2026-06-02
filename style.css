@@ -504,22 +504,31 @@ body.panel-open #bottom-timeline {
 .tooltip tr:last-child th, .tooltip tr:last-child td { border-bottom: none; }
 
 
+/* --- АНІМАЦІЇ ДЛЯ ПОДІЙ (Напади та Посольства) --- */
 #event-attack, 
-#event-attack-orel {
+#event-attack-orel,
+#event-envoy {
     transition: opacity 0.5s ease;
 }
 
 #event-attack.timeline-hidden, 
-#event-attack-orel.timeline-hidden {
+#event-attack-orel.timeline-hidden,
+#event-envoy.timeline-hidden {
     opacity: 0 !important; 
     visibility: hidden !important; 
     pointer-events: none !important;
 }
 
-/* Анімація руху стрілки */
+/* Червона стрілка нападу */
 .attack-arrow {
     animation: moveArrow 1s linear infinite;
     filter: drop-shadow(0 0 5px rgba(233, 69, 96, 0.8));
+}
+
+/* Синя стрілка посольства */
+.peace-arrow {
+    animation: moveArrow 1.5s linear infinite; /* Трохи повільніша, бо це мирна хода */
+    filter: drop-shadow(0 0 5px rgba(4, 150, 255, 0.8));
 }
 
 @keyframes moveArrow {
@@ -527,9 +536,8 @@ body.panel-open #bottom-timeline {
     to { stroke-dashoffset: 0; }
 }
 
-/* Мерехтіння вогнищ - ВИПРАВЛЕНО (Локальна трансформація) */
+/* Мерехтіння вогнищ */
 .fire-anim {
-    /* Ця властивість критично важлива! Змушує анімацію працювати відносно самої іконки, а не всього SVG-полотна */
     transform-box: fill-box; 
     transform-origin: center bottom;
     animation: flicker 0.4s infinite alternate ease-in-out;
