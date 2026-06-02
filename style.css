@@ -253,16 +253,26 @@ body.finale-water .line.ottoman { stroke: #0496ff; filter: drop-shadow(0 0 10px 
 }
 
 /* --- ІНТЕРАКТИВНІ ПОСЕЛЕННЯ ТА СУВОЇ --- */
+
+/* ПОВНІСТЮ ВБИВАЄМО БУДЬ-ЯКІ ЗАТРИМКИ ТА ПЛАВНІСТЬ З МИНУЛОГО КОДУ */
 .settlement-group {
-    opacity: 1; 
-    visibility: visible;
-    /* Видалено ВСІ затримки появи/зникнення */
+    opacity: 1 !important; 
+    visibility: visible !important;
+    transition: none !important; 
+    transition-delay: 0s !important; 
+}
+
+/* Перебиваємо стару затримку від малювання річок */
+#rivers-container.show-rivers .settlement-group {
+    transition-delay: 0s !important;
+    transition: none !important;
 }
 
 .settlement-group.timeline-hidden {
     opacity: 0 !important; 
     visibility: hidden !important; 
     pointer-events: none !important;
+    animation: none !important; /* Зупиняє будь-які старі анімації */
 }
 
 .hitbox { cursor: default; pointer-events: none; }
@@ -271,16 +281,17 @@ body.finale-water .line.ottoman { stroke: #0496ff; filter: drop-shadow(0 0 10px 
     pointer-events: all; 
 }
 
+/* Текст поселень: тільки зміна кольору при наведенні, ЖОДНИХ затримок прозорості */
 .settlement-label {
     fill: rgba(255, 255, 255, 0.5); font-size: 32px; font-weight: bold;
     text-anchor: middle; letter-spacing: 4px; text-transform: uppercase;
-    transition: fill 0.3s ease, font-size 0.3s ease; 
+    transition: fill 0.2s ease, font-size 0.2s ease !important; 
     pointer-events: none;
 }
 
 .house-icon { 
     fill: rgba(255, 255, 255, 0.4); 
-    transition: fill 0.3s ease; 
+    transition: fill 0.2s ease !important; 
     pointer-events: none; 
 }
 
@@ -291,29 +302,29 @@ body.finale-water .line.ottoman { stroke: #0496ff; filter: drop-shadow(0 0 10px 
     fill: #fff; filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8)); font-size: 34px;
 }
 
-/* --- ОДНОМОМЕНТНИЙ ЗОЛОТИЙ СПАЛАХ --- */
+/* --- ОДНОМОМЕНТНИЙ ЗОЛОТИЙ ВИБУХ --- */
 @keyframes nuclearFlash {
     0% { 
-        /* Миттєвий старт: максимальна яскравість і широка аура, НІЯКОГО opacity: 0 */
-        filter: drop-shadow(0 0 40px #f9a826) drop-shadow(0 0 80px #fff) brightness(10); 
+        /* У момент кліку: МАКСИМАЛЬНА яскравість, шалена тінь і біла заливка */
+        filter: drop-shadow(0 0 50px #f9a826) drop-shadow(0 0 100px #fff) brightness(15); 
         fill: #ffffff;
     }
     100% { 
-        /* Стухання до звичайного стану */
+        /* Плавне охолодження до нормального стану */
         filter: drop-shadow(0 0 0px transparent) brightness(1); 
     }
 }
 
+/* Спалах застосовується миттєво */
 .settlement-group.flash-reveal .house-icon,
 .settlement-group.flash-reveal .settlement-label {
-    /* Тривалість затухання спалаху — 1.5 секунди */
     animation: nuclearFlash 1.5s ease-out forwards;
 }
 
 /* Кнопка-сувій */
 .scroll-btn {
     cursor: pointer; pointer-events: all; 
-    transition: filter 0.2s ease, opacity 0.1s ease; 
+    transition: filter 0.2s ease, opacity 0.1s ease !important; 
     filter: drop-shadow(0 0 3px rgba(249, 168, 38, 0.8));
 }
 
