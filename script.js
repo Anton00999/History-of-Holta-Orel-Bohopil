@@ -583,8 +583,8 @@ nextBtn.addEventListener('click', () => {
         if (targetYear === 1757) idToOpen = 'orel';
         else if (targetYear === 1762) idToOpen = 'holta';
         else if (targetYear === 1763) idToOpen = 'bohopil';
-        else if (targetYear === 1763.9) idToOpen = 'attack'; // ДОДАНО
-        else if (targetYear === 1764) idToOpen = 'fort';
+        else if (targetYear === 1763.9) idToOpen = 'attack';
+        else if (targetYear === 1764.5) idToOpen = 'fort'; // ЗМІНЕНО на 1764.5
         
         if (idToOpen) {
             openInfoPanel(idToOpen);
