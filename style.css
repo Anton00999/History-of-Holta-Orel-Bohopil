@@ -418,25 +418,31 @@ body.finale-water .line.ottoman { stroke: #0496ff; filter: drop-shadow(0 0 10px 
 .timeline-house.visible {
     opacity: 1 !important;
 }
-/* --- АНІМАЦІЯ ЗСУВУ МАПИ ТА ТАЙМЛАЙНУ --- */
+/* --- АНІМАЦІЯ ЗСУВУ МАПИ ТА КАМЕРИ --- */
 #rivers-container {
-    transition: opacity 3s ease, transform 0.5s cubic-bezier(0.25, 1, 0.5, 1) !important;
+    /* Змінні для керування камерою з JavaScript */
+    --cam-scale: 1;
+    --cam-x: 0%;
+    --cam-y: 0%;
+    --panel-shift: 0vw;
+    
+    transition: opacity 3s ease, transform 1.5s cubic-bezier(0.25, 1, 0.5, 1) !important;
+    transform-origin: center center;
+    /* Комбінуємо зсув від панелі та наближення камери */
+    transform: translateX(var(--panel-shift)) scale(var(--cam-scale)) translate(var(--cam-x), var(--cam-y)) !important;
+}
+
+body.panel-open #rivers-container {
+    --panel-shift: -12.5vw;
 }
 
 #bottom-timeline {
     transition: opacity 2s ease, transform 0.5s cubic-bezier(0.25, 1, 0.5, 1) !important;
 }
 
-/* Коли відкрита панель, зсуваємо мапу вліво рівно на половину ширини панелі (12.5%) */
-body.panel-open #rivers-container {
-    transform: translateX(-12.5vw);
-}
-
-/* Таймлайн вже посунутий на -50%, тому додаємо ще -12.5% */
 body.panel-open #bottom-timeline {
     transform: translateX(calc(-50% - 12.5vw));
 }
-
 
 /* --- БІЧНА ПАНЕЛЬ ДОВІДКИ (ЗАМІСТЬ МОДАЛЬНОГО ВІКНА) --- */
 #info-modal {
