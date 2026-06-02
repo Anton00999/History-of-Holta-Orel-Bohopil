@@ -62,26 +62,16 @@
     </div>
 
     <div id="bottom-timeline" class="hidden">
-        <div class="timeline-track">
-            <div class="timeline-line"></div>
-            <div class="timeline-progress" id="timeline-progress"></div>
-            
-            <div class="timeline-node" data-index="0">
-                <div class="node-circle"></div>
-                <div class="node-year">1757</div>
-            </div>
-            <div class="timeline-node locked" data-index="1">
-                <div class="node-circle"></div>
-                <div class="node-year">1762</div>
-            </div>
-            <div class="timeline-node locked" data-index="2">
-                <div class="node-circle"></div>
-                <div class="node-year">1763</div>
+        <div class="slider-wrapper">
+            <div id="year-display">1757</div>
+            <input type="range" id="year-slider" min="1757" max="1765" step="0.1" value="1757">
+            <div class="slider-ticks">
+                <span>1757 (Орел)</span>
+                <span>1765</span>
             </div>
         </div>
         <button id="next-event-btn">Наступна подія ➔</button>
     </div>
-
     <div id="info-modal" class="hidden">
         <div class="modal-content">
             <button id="close-modal">&times;</button>
