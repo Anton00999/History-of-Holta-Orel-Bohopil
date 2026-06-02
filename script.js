@@ -459,6 +459,23 @@ const nextBtn = document.getElementById('next-event-btn');
 
 let isAnimating = false; 
 
+// --- ДОПІМІЖНІ ФУНКЦІЇ ДЛЯ ПАНЕЛІ ---
+function openInfoPanel(id) {
+    const data = historyData.find(d => d.id === id);
+    if (data) {
+        document.getElementById('modal-title').textContent = data.title;
+        document.getElementById('modal-text').textContent = data.text;
+        document.getElementById('info-modal').classList.remove('hidden');
+        document.body.classList.add('panel-open');
+    }
+}
+
+function closeInfoPanel() {
+    document.getElementById('info-modal').classList.add('hidden');
+    document.body.classList.remove('panel-open');
+}
+// ------------------------------------
+
 function generateSliderMarkers() {
     const markerContainer = document.getElementById('slider-markers');
     if (!markerContainer) return;
@@ -491,6 +508,9 @@ slider.addEventListener('input', (e) => {
         slider.value = maxAllowedYear;
     }
     updateTimelineView(selectedYear);
+    
+    // ДОДАНО: Як тільки користувач торкається повзунка - панель ховається
+    closeInfoPanel();
 });
 
 function animateSlider(startVal, endVal, duration) {
@@ -530,6 +550,17 @@ nextBtn.addEventListener('click', () => {
         const targetYear = milestones[currentMilestoneIndex];
         
         animateSlider(startYear, targetYear, 1500); 
+
+        // ДОДАНО: Визначаємо, яка подія настала, і одразу відкриваємо її довідку
+        let idToOpen = null;
+        if (targetYear === 1757) idToOpen = 'orel';
+        else if (targetYear === 1762) idToOpen = 'holta';
+        else if (targetYear === 1763) idToOpen = 'bohopil';
+        else if (targetYear === 1764) idToOpen = 'fort';
+        
+        if (idToOpen) {
+            openInfoPanel(idToOpen);
+        }
     }
 });
 
@@ -555,7 +586,6 @@ function processSettlement(id, startYear, currentYear) {
             group.classList.add('flash-reveal');
         }
 
-        // КЕШУВАННЯ (ОПТИМІЗАЦІЯ ДЛЯ 60-144 FPS): Шукаємо хатки лише один раз, а не кожен кадр анімації!
         if (!group.cachedHouses) {
             group.cachedHouses = group.querySelectorAll('.timeline-house');
         }
@@ -592,23 +622,8 @@ document.querySelectorAll('.scroll-btn').forEach(btn => {
     btn.addEventListener('click', function(e) {
         e.stopPropagation(); 
         const parentId = this.parentElement.getAttribute('data-id');
-        const data = historyData.find(d => d.id === parentId);
-        
-        if (data) {
-            document.getElementById('modal-title').textContent = data.title;
-            document.getElementById('modal-text').textContent = data.text;
-            
-            // Відкриваємо панель
-            document.getElementById('info-modal').classList.remove('hidden');
-            // Даємо команду сторінці "посунутися" вліво
-            document.body.classList.add('panel-open');
-        }
+        openInfoPanel(parentId);
     });
 });
 
-document.getElementById('close-modal').addEventListener('click', () => {
-    // Ховаємо панель
-    document.getElementById('info-modal').classList.add('hidden');
-    // Повертаємо сторінку в центр
-    document.body.classList.remove('panel-open');
-});
+document.getElementById('close-modal').addEventListener('click', closeInfoPanel);
