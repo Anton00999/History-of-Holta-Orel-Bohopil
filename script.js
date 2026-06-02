@@ -259,8 +259,8 @@ function updateBranchPositions(nodeData, parentX, parentY, angleOffset) {
         });
     }
 }
-// ----------------------------------------------------
 
+// ----------------------------------------------------
 function drawLine(x1, y1, x2, y2, delay, isThick = false) {
     const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
     line.setAttribute('x1', x1);
@@ -399,20 +399,19 @@ const historyData = [
         text: "Реагуючи на активність сусідів, Річ Посполита закріплює свою присутність у межиріччі. За наказом графа Станіслава Потоцького тут закладається укріплений маєток Богопіль, який став митним та торговельним центром Брацлавського воєводства."
     },
     {
-        // ДОДАНО: Інформація про напад
         id: 'attack',
         title: "Знищення Богополя (Грудень 1763)",
         text: "Мирне співіснування виявилося міфом. Вже наприкінці 1763 року загони козаків з Орла за наказом російського командування здійснили рейд на щойно закладений Богопіль. Маєток був значно зруйнований і спалений, що яскраво демонструє жорстку конкуренцію на Фронтирі."
     },
     {
         id: 'fort',
-        title: "Шанець (1764)",
+        title: "Шанець (Середина 1764)",
         text: "Зліва від слободи Орел споруджується земляне укріплення бастіонного типу у формі шестикутної зірки. Цей шанець мав на меті посилити військову присутність імперії на кордоні та захистити стратегічну переправу через Південний Буг."
     }
 ];
 
-// ЗМІНЕНО: Додано подію 1763.9
-const milestones = [1756, 1757, 1762, 1763, 1763.9, 1764, 1765];
+// ІДЕАЛЬНО ВИВІРЕНІ ТОЧКИ ЗУПИНКИ: 1764.5 для Шанця
+const milestones = [1756, 1757, 1762, 1763, 1763.9, 1764.5, 1765];
 let currentMilestoneIndex = 0;
 
 // --- ГЕНЕРАТОР ДИНАМІЧНИХ ХАТИНОК ---
@@ -448,7 +447,6 @@ function scatterDynamicHouses(groupId, cx, cy, radius, startCount, startYear, pe
             appearYear = startYear + (extraIndex / perYearCount);
         }
         
-        // ДОДАНО: Логіка "смертності". Знищуємо 6 перших хат Богополя під час нападу
         let destroyYear = null;
         if (groupId === 'settlement-bohopil' && i < 6) {
             destroyYear = 1763.9;
@@ -478,7 +476,7 @@ function focusCamera(id) {
         'orel': { x: '-8%', y: '5%', scale: 1.3 }, 
         'holta': { x: '-2%', y: '-8%', scale: 1.3 }, 
         'bohopil': { x: '8%', y: '2%', scale: 1.3 }, 
-        'attack': { x: '2%', y: '1%', scale: 1.4 }, // ДОДАНО: Ідеальний центр між Орлом та Богополем
+        'attack': { x: '2%', y: '1%', scale: 1.4 }, 
         'fort': { x: '5%', y: '8%', scale: 1.3 }, 
         'end': { x: '0%', y: '0%', scale: 1 } 
     };
@@ -584,7 +582,7 @@ nextBtn.addEventListener('click', () => {
         else if (targetYear === 1762) idToOpen = 'holta';
         else if (targetYear === 1763) idToOpen = 'bohopil';
         else if (targetYear === 1763.9) idToOpen = 'attack';
-        else if (targetYear === 1764.5) idToOpen = 'fort'; // ЗМІНЕНО на 1764.5
+        else if (targetYear === 1764.5) idToOpen = 'fort'; // ТОЧНО 1764.5
         
         if (idToOpen) {
             openInfoPanel(idToOpen);
@@ -596,20 +594,19 @@ nextBtn.addEventListener('click', () => {
 });
 
 function updateTimelineView(currentYear) {
-    // ЗМІНЕНО: Відображаємо "Груд. 1763" рівно до появи форту в середині 1764
     if (currentYear >= 1763.9 && currentYear < 1764.5) {
         yearDisplay.textContent = "1763";
     } else {
         yearDisplay.textContent = Math.floor(currentYear);
     }
 
+    // ТУТ ЗАДАНІ ПРАВИЛЬНІ ДІАПАЗОНИ СУВОЇВ ДЛЯ КОЖНОЇ ПОДІЇ
     processSettlement('orel', 1757, 1762, currentYear);
     processSettlement('holta', 1762, 1763, currentYear);
     processSettlement('bohopil', 1763, 1763.9, currentYear);
-    processSettlement('fort', 1764.5, 1766, currentYear); // ЗМІНЕНО на 1764.5
+    processSettlement('fort', 1764.5, 1766, currentYear); // Від 1764.5 до кінця
     
-    // Твій виклик тепер абсолютно правильний
-    processAttackEvent('attack', 1763.9, 1764.5, currentYear); 
+    processAttackEvent('attack', 1763.9, 1764.5, currentYear); // Від атаки рівно до форту
     
     if (currentYear < 1757) {
         nextBtn.textContent = "Почати ➔";
@@ -620,6 +617,8 @@ function updateTimelineView(currentYear) {
 
 function processSettlement(id, startYear, endYear, currentYear) {
     const group = document.getElementById(`settlement-${id}`);
+    if (!group) return;
+    
     const scrollBtn = group.querySelector('.scroll-btn');
 
     if (currentYear >= startYear) {
@@ -646,7 +645,6 @@ function processSettlement(id, startYear, endYear, currentYear) {
             }
         });
 
-        // ЗМІНЕНО: Сувій показується рівно до початку наступної ключової події (endYear)
         if (currentYear >= startYear && currentYear < endYear) {
             scrollBtn.classList.remove('hidden');
         } else {
@@ -667,11 +665,10 @@ function processSettlement(id, startYear, endYear, currentYear) {
 
 function processAttackEvent(id, startYear, endYear, currentYear) {
     const attackGroup = document.getElementById(`event-${id}`);
-    if (!attackGroup) return; // Захист від помилок
+    if (!attackGroup) return; 
     
     const scrollBtn = attackGroup.querySelector('.scroll-btn');
 
-    // Логіка увімкнення та вимкнення події за заданими роками
     if (currentYear >= startYear && currentYear < endYear) {
         attackGroup.classList.remove('timeline-hidden');
         scrollBtn.classList.remove('hidden');
@@ -680,7 +677,6 @@ function processAttackEvent(id, startYear, endYear, currentYear) {
         scrollBtn.classList.add('hidden');
     }
 }
-
 
 // --- ЛОГІКА СУВОЇВ ТА ДОВІДКИ ---
 document.querySelectorAll('.scroll-btn').forEach(btn => {
@@ -696,7 +692,3 @@ document.getElementById('close-modal').addEventListener('click', () => {
     closeInfoPanel();
     focusCamera('start'); 
 });
-
-
-
-
