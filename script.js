@@ -399,14 +399,20 @@ const historyData = [
         text: "Реагуючи на активність сусідів, Річ Посполита закріплює свою присутність у межиріччі. За наказом графа Станіслава Потоцького тут закладається укріплений маєток Богопіль, який став митним та торговельним центром Брацлавського воєводства."
     },
     {
+        // ДОДАНО: Інформація про напад
+        id: 'attack',
+        title: "Знищення Богополя (Грудень 1763)",
+        text: "Мирне співіснування виявилося міфом. Вже наприкінці 1763 року загони козаків з Орла за наказом російського командування здійснили рейд на щойно закладений Богопіль. Маєток був значно зруйнований і спалений, що яскраво демонструє жорстку конкуренцію на Фронтирі."
+    },
+    {
         id: 'fort',
         title: "Шанець (1764)",
         text: "Зліва від слободи Орел споруджується земляне укріплення бастіонного типу у формі шестикутної зірки. Цей шанець мав на меті посилити військову присутність імперії на кордоні та захистити стратегічну переправу через Південний Буг."
     }
 ];
 
-// ЗМІНЕНО: Починаємо з 1756 року!
-const milestones = [1756, 1757, 1762, 1763, 1764, 1765];
+// ЗМІНЕНО: Додано подію 1763.9
+const milestones = [1756, 1757, 1762, 1763, 1763.9, 1764, 1765];
 let currentMilestoneIndex = 0;
 
 // --- ГЕНЕРАТОР ДИНАМІЧНИХ ХАТИНОК ---
@@ -442,7 +448,14 @@ function scatterDynamicHouses(groupId, cx, cy, radius, startCount, startYear, pe
             appearYear = startYear + (extraIndex / perYearCount);
         }
         
+        // ДОДАНО: Логіка "смертності". Знищуємо 6 перших хат Богополя під час нападу
+        let destroyYear = null;
+        if (groupId === 'settlement-bohopil' && i < 6) {
+            destroyYear = 1763.9;
+        }
+
         useEl.dataset.appearYear = appearYear;
+        if (destroyYear) useEl.dataset.destroyYear = destroyYear;
 
         const rotation = Math.random() * 40 - 20;
         useEl.setAttribute('transform', `rotate(${rotation} ${x} ${y})`);
@@ -458,15 +471,14 @@ const nextBtn = document.getElementById('next-event-btn');
 
 let isAnimating = false; 
 
-// ДОДАНО: Керування фокусом камери
 function focusCamera(id) {
     const rc = document.getElementById('rivers-container');
-    // Обчислені координати для ідеального центрування кожного поселення
     const cameraPositions = {
         'start': { x: '0%', y: '0%', scale: 1 }, 
         'orel': { x: '-8%', y: '5%', scale: 1.3 }, 
         'holta': { x: '-2%', y: '-8%', scale: 1.3 }, 
         'bohopil': { x: '8%', y: '2%', scale: 1.3 }, 
+        'attack': { x: '2%', y: '1%', scale: 1.4 }, // ДОДАНО: Ідеальний центр між Орлом та Богополем
         'fort': { x: '5%', y: '8%', scale: 1.3 }, 
         'end': { x: '0%', y: '0%', scale: 1 } 
     };
@@ -497,7 +509,7 @@ function generateSliderMarkers() {
     if (!markerContainer) return;
     
     markerContainer.innerHTML = '';
-    const minYear = 1756; // ЗМІНЕНО: Початок маркування з 1756
+    const minYear = 1756; 
     const maxYear = 1765;
     
     milestones.forEach(year => {
@@ -512,7 +524,7 @@ generateSliderMarkers();
 
 function initTimeline() {
     document.getElementById('bottom-timeline').classList.remove('hidden');
-    updateTimelineView(1756); // ЗМІНЕНО: Стартуємо з порожнього поля
+    updateTimelineView(1756); 
 }
 
 slider.addEventListener('input', (e) => {
@@ -526,7 +538,6 @@ slider.addEventListener('input', (e) => {
     updateTimelineView(selectedYear);
     
     closeInfoPanel();
-    // Повертаємо загальний вигляд, коли користувач вільно скролить
     focusCamera('start'); 
 });
 
@@ -568,31 +579,36 @@ nextBtn.addEventListener('click', () => {
         
         animateSlider(startYear, targetYear, 1500); 
 
-        // Логіка фокусу камери та відкриття довідки
         let idToOpen = null;
         if (targetYear === 1757) idToOpen = 'orel';
         else if (targetYear === 1762) idToOpen = 'holta';
         else if (targetYear === 1763) idToOpen = 'bohopil';
+        else if (targetYear === 1763.9) idToOpen = 'attack'; // ДОДАНО
         else if (targetYear === 1764) idToOpen = 'fort';
         
         if (idToOpen) {
             openInfoPanel(idToOpen);
             focusCamera(idToOpen);
         } else {
-            focusCamera('end'); // Віддаляємо камеру в кінці
+            focusCamera('end'); 
         }
     }
 });
 
 function updateTimelineView(currentYear) {
-    yearDisplay.textContent = Math.floor(currentYear);
+    // ЗМІНЕНО: Спеціальний текст для грудня 1763
+    if (currentYear >= 1763.9 && currentYear < 1764) {
+        yearDisplay.textContent = "Груд. 1763";
+    } else {
+        yearDisplay.textContent = Math.floor(currentYear);
+    }
 
     processSettlement('orel', 1757, currentYear);
     processSettlement('holta', 1762, currentYear);
     processSettlement('bohopil', 1763, currentYear);
     processSettlement('fort', 1764, currentYear);
+    processAttackEvent(currentYear); // ДОДАНО: Обробка нападу
     
-    // Зміна тексту кнопки
     if (currentYear < 1757) {
         nextBtn.textContent = "Почати ➔";
     } else {
@@ -619,7 +635,10 @@ function processSettlement(id, startYear, currentYear) {
 
         group.cachedHouses.forEach(house => {
             const appearYear = parseFloat(house.dataset.appearYear);
-            const shouldShow = currentYear >= appearYear;
+            // ЗМІНЕНО: Перевіряємо, чи не спалили цю хату!
+            const destroyYear = house.dataset.destroyYear ? parseFloat(house.dataset.destroyYear) : Infinity;
+            
+            const shouldShow = (currentYear >= appearYear) && (currentYear < destroyYear);
             
             if (house.classList.contains('visible') !== shouldShow) {
                 house.classList.toggle('visible', shouldShow);
@@ -644,17 +663,36 @@ function processSettlement(id, startYear, currentYear) {
     }
 }
 
+// ДОДАНО: Логіка видимості стрілки та пожежі
+function processAttackEvent(currentYear) {
+    const attackGroup = document.getElementById('event-attack');
+    const scrollBtn = attackGroup.querySelector('.scroll-btn');
+
+    // Вогонь і стрілка активні з кінця 1763 до середини 1764
+    if (currentYear >= 1763.9 && currentYear < 1764.5) {
+        attackGroup.classList.remove('timeline-hidden');
+        scrollBtn.classList.remove('hidden');
+    } else {
+        attackGroup.classList.add('timeline-hidden');
+        scrollBtn.classList.add('hidden');
+    }
+}
+
 // --- ЛОГІКА СУВОЇВ ТА ДОВІДКИ ---
 document.querySelectorAll('.scroll-btn').forEach(btn => {
     btn.addEventListener('click', function(e) {
         e.stopPropagation(); 
         const parentId = this.parentElement.getAttribute('data-id');
         openInfoPanel(parentId);
-        focusCamera(parentId); // Наближаємо при ручному кліку на сувій
+        focusCamera(parentId); 
     });
 });
 
 document.getElementById('close-modal').addEventListener('click', () => {
     closeInfoPanel();
-    focusCamera('start'); // Повертаємо камеру назад при закритті довідки
+    focusCamera('start'); 
 });
+
+
+
+
