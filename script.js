@@ -463,6 +463,10 @@ let isAnimating = false; // Блокувальник, щоб користува�
 function generateSliderMarkers() {
     const markerContainer = document.getElementById('slider-markers');
     if (!markerContainer) return;
+    
+    // Очищаємо перед генерацією, щоб не було дублів
+    markerContainer.innerHTML = '';
+    
     const minYear = 1757;
     const maxYear = 1765;
     
@@ -470,11 +474,12 @@ function generateSliderMarkers() {
         const percent = ((year - minYear) / (maxYear - minYear)) * 100;
         const marker = document.createElement('div');
         marker.className = 'slider-marker';
-        // Формула, яка ідеально центрує крапку під "шариком" повзунка (шириною 28px)
-        marker.style.left = `calc(${percent}% + ${14 - (percent * 0.28)}px)`;
+        // НОВА ФОРМУЛА для шарика розміром 20px (замість 28px)
+        marker.style.left = `calc(${percent}% + ${10 - (percent * 0.2)}px)`;
         markerContainer.appendChild(marker);
     });
 }
+generateSliderMarkers();
 generateSliderMarkers();
 
 function initTimeline() {
