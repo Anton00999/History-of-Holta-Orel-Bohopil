@@ -441,15 +441,68 @@ function initTimeline() {
 }
 
 function updateTimelineView() {
+    // Зберігаємо попередній крок, щоб знати, чи потрібен спалах
+    if (typeof window.lastStep === 'undefined') window.lastStep = -1;
+
     // 1. Оновлюємо стан поселень на мапі
     historyData.forEach((data, index) => {
         const settlement = document.getElementById(`settlement-${data.id}`);
-        if (index === currentTimelineStep) {
-            settlement.classList.remove('timeline-hidden'); // Показуємо активне
+        const scrollBtn = settlement.querySelector('.scroll-btn');
+
+        // Логіка поселень: показуємо всі поселення, рік яких вже настав або пройшов
+        if (index <= currentTimelineStep) {
+            settlement.classList.remove('timeline-hidden'); 
+            
+            // Якщо це нове поселення, яке ми тільки-но відкрили - робимо спалах
+            if (index === currentTimelineStep && currentTimelineStep > window.lastStep) {
+                settlement.classList.remove('flash-reveal');
+                void settlement.offsetWidth; // Магія для перезапуску CSS-анімації
+                settlement.classList.add('flash-reveal');
+            }
         } else {
-            settlement.classList.add('timeline-hidden'); // Ховаємо інші
+            // Поселення з майбутнього залишаються прихованими
+            settlement.classList.add('timeline-hidden'); 
+        }
+
+        // Логіка сувою: показуємо іконку ТІЛЬКИ в той рік, про який іде мова
+        if (index === currentTimelineStep) {
+            scrollBtn.classList.remove('hidden');
+        } else {
+            scrollBtn.classList.add('hidden');
         }
     });
+
+    window.lastStep = currentTimelineStep;
+
+    // 2. Оновлюємо вузли на нижній шкалі
+    const nodes = document.querySelectorAll('.timeline-node');
+    nodes.forEach((node, index) => {
+        node.classList.remove('active');
+        if (index === currentTimelineStep) node.classList.add('active');
+        
+        if (index <= maxUnlockedStep) {
+            node.classList.remove('locked');
+        }
+    });
+
+    // 3. Заповнюємо смугу прогресу
+    const progress = document.getElementById('timeline-progress');
+    progress.style.width = `${(currentTimelineStep / (historyData.length - 1)) * 100}%`;
+
+    // 4. Оновлюємо кнопку "Наступна подія"
+    const nextBtn = document.getElementById('next-event-btn');
+    if (currentTimelineStep === historyData.length - 1) {
+        nextBtn.disabled = true;
+    } else {
+        nextBtn.disabled = false;
+        // Якщо користувач відмотав час назад
+        if (currentTimelineStep < maxUnlockedStep) {
+            nextBtn.textContent = "Вперед ➔";
+        } else {
+            nextBtn.textContent = "Наступна подія ➔";
+        }
+    }
+}
 
     // 2. Оновлюємо вузли на нижній шкалі
     const nodes = document.querySelectorAll('.timeline-node');
