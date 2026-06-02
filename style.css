@@ -255,8 +255,8 @@ body.finale-water .line.ottoman { stroke: #0496ff; filter: drop-shadow(0 0 10px 
 /* --- ІНТЕРАКТИВНІ ПОСЕЛЕННЯ ТА СУВОЇ --- */
 .settlement-group {
     opacity: 1; 
-    /* ЗМІНЕНО: Було 1.5s, тепер 0.3s для дуже швидкої реакції */
-    transition: opacity 0.3s ease; 
+    /* ШВИДКІСТЬ: Зникнення та поява тепер майже миттєві (0.15 секунди) */
+    transition: opacity 0.15s ease; 
 }
 
 .settlement-group.timeline-hidden {
@@ -289,15 +289,15 @@ body.finale-water .line.ottoman { stroke: #0496ff; filter: drop-shadow(0 0 10px 
     fill: #fff; filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8)); font-size: 34px;
 }
 
-/* НОВА, ЯСКРАВА АНІМАЦІЯ ПОЯВИ */
+/* СУПЕР-СПАЛАХ (Великий золотий вибух) */
 @keyframes settlementFlash {
     0% { 
         filter: drop-shadow(0 0 0px #f9a826) brightness(1); 
         opacity: 0; 
     }
-    15% { 
-        /* Сильний спалах: яскравість х3, велика золота тінь, біла заливка */
-        filter: drop-shadow(0 0 40px #f9a826) brightness(3); 
+    10% { 
+        /* Потрійна тінь (золото + білий центр) та шалена яскравість х5! */
+        filter: drop-shadow(0 0 20px #f9a826) drop-shadow(0 0 50px #fff) drop-shadow(0 0 100px #f9a826) brightness(5); 
         fill: #ffffff;
         opacity: 1; 
     }
@@ -309,15 +309,15 @@ body.finale-water .line.ottoman { stroke: #0496ff; filter: drop-shadow(0 0 10px 
 
 .settlement-group.flash-reveal .house-icon,
 .settlement-group.flash-reveal .settlement-label {
-    /* ЗМІНЕНО: Анімація стала швидшою і агресивнішою (1 секунда) */
-    animation: settlementFlash 1s ease-out forwards;
+    /* Анімація триває 0.8с, удар світла відбувається різко на самому початку */
+    animation: settlementFlash 0.8s ease-out forwards;
 }
 
 /* Кнопка-сувій */
 .scroll-btn {
     cursor: pointer; pointer-events: all; 
-    /* ЗМІНЕНО: Сувій теж зникає швидко (0.3s) */
-    transition: filter 0.3s ease, opacity 0.3s ease;
+    /* ШВИДКІСТЬ: Сувій зникає за долі секунди */
+    transition: filter 0.2s ease, opacity 0.15s ease;
     filter: drop-shadow(0 0 3px rgba(249, 168, 38, 0.8));
 }
 
