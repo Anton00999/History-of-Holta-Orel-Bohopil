@@ -253,35 +253,40 @@ body.finale-water .line.ottoman { stroke: #0496ff; filter: drop-shadow(0 0 10px 
 }
 
 /* --- ІНТЕРАКТИВНІ ПОСЕЛЕННЯ ТА СУВОЇ --- */
+
+/* ЖОДНИХ ЗАТРИМОК! Поселення з'являється миттєво */
 .settlement-group {
     opacity: 1; 
-    /* ШВИДКІСТЬ: Зникнення та поява тепер майже миттєві (0.15 секунди) */
-    transition: opacity 0.15s ease; 
+    visibility: visible;
 }
 
 .settlement-group.timeline-hidden {
     opacity: 0 !important; 
+    visibility: hidden !important; /* Миттєве приховування */
     pointer-events: none !important;
 }
 
 .hitbox { cursor: default; pointer-events: none; }
 
-/* Хітбокси працюють ТІЛЬКИ у відкритих поселеннях */
 #rivers-container.show-rivers .settlement-group:not(.timeline-hidden) .hitbox {
     pointer-events: all; 
 }
 
+/* ЗАБРАНО "transition: all", щоб він не гальмував спалах */
 .settlement-label {
     fill: rgba(255, 255, 255, 0.5); font-size: 32px; font-weight: bold;
     text-anchor: middle; letter-spacing: 4px; text-transform: uppercase;
-    transition: all 0.4s ease; pointer-events: none;
+    transition: fill 0.3s ease, font-size 0.3s ease; /* Анімуємо тільки колір для ховеру */
+    pointer-events: none;
 }
 
 .house-icon { 
-    fill: rgba(255, 255, 255, 0.4); transition: all 0.4s ease; pointer-events: none; 
+    fill: rgba(255, 255, 255, 0.4); 
+    transition: fill 0.3s ease; /* Тільки колір для ховеру */
+    pointer-events: none; 
 }
 
-/* Сяйво при наведенні курсором на відкриті поселення */
+/* Підсвічування при наведенні мишкою */
 #rivers-container.show-rivers .settlement-group:not(.timeline-hidden):hover .house-icon {
     fill: #fff; filter: drop-shadow(0 0 5px #fff);
 }
@@ -289,35 +294,30 @@ body.finale-water .line.ottoman { stroke: #0496ff; filter: drop-shadow(0 0 10px 
     fill: #fff; filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8)); font-size: 34px;
 }
 
-/* СУПЕР-СПАЛАХ (Великий золотий вибух) */
-@keyframes settlementFlash {
+/* --- ТОТАЛЬНИЙ ЗОЛОТИЙ СПАЛАХ --- */
+@keyframes nuclearFlash {
     0% { 
-        filter: drop-shadow(0 0 0px #f9a826) brightness(1); 
-        opacity: 0; 
+        filter: drop-shadow(0 0 0px transparent) brightness(1); 
     }
     10% { 
-        /* Потрійна тінь (золото + білий центр) та шалена яскравість х5! */
-        filter: drop-shadow(0 0 20px #f9a826) drop-shadow(0 0 50px #fff) drop-shadow(0 0 100px #f9a826) brightness(5); 
+        /* Максимальний пересвіт (х10) та подвійна золота/біла тінь */
+        filter: drop-shadow(0 0 40px #f9a826) drop-shadow(0 0 80px #fff) brightness(10); 
         fill: #ffffff;
-        opacity: 1; 
     }
     100% { 
-        filter: drop-shadow(0 0 5px #fff) brightness(1); 
-        opacity: 1; 
+        filter: drop-shadow(0 0 0px transparent) brightness(1); 
     }
 }
 
-.settlement-group.flash-reveal .house-icon,
-.settlement-group.flash-reveal .settlement-label {
-    /* Анімація триває 0.8с, удар світла відбувається різко на самому початку */
-    animation: settlementFlash 0.8s ease-out forwards;
+/* Застосовуємо спалах на всю групу відразу */
+.settlement-group.flash-reveal {
+    animation: nuclearFlash 1s ease-out forwards;
 }
 
 /* Кнопка-сувій */
 .scroll-btn {
     cursor: pointer; pointer-events: all; 
-    /* ШВИДКІСТЬ: Сувій зникає за долі секунди */
-    transition: filter 0.2s ease, opacity 0.15s ease;
+    transition: filter 0.2s ease, opacity 0.1s ease; /* Майже миттєво */
     filter: drop-shadow(0 0 3px rgba(249, 168, 38, 0.8));
 }
 
@@ -326,7 +326,7 @@ body.finale-water .line.ottoman { stroke: #0496ff; filter: drop-shadow(0 0 10px 
 }
 
 .scroll-btn.hidden {
-    opacity: 0 !important; pointer-events: none !important;
+    opacity: 0 !important; visibility: hidden !important; pointer-events: none !important;
 }
 
 /* --- НИЖНІЙ ТАЙМЛАЙН --- */
