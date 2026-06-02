@@ -220,13 +220,12 @@ function animateTilt(timestamp) {
         if (!finaleTriggered) {
             finaleTriggered = true;
             setTimeout(() => {
-                // 1. Розмиваємо і ховаємо мапу
                 container.classList.add('fade-out-map');
                 
-                // 2. Показуємо і промальовуємо річки
                 setTimeout(() => {
                     document.getElementById('rivers-container').classList.add('show-rivers');
-                }, 1000); // Невелика затримка, щоб почати малювати, коли мапа вже трохи зникла
+                    setTimeout(initTimeline, 1000); 
+                }, 1000); 
 
             }, 5000);
         }
@@ -383,26 +382,33 @@ window.addEventListener('resize', () => {
     }
 });
 
+// --- БАЗА ДАНИХ ІСТОРИЧНИХ ДОВІДОК ---
+const historyData = [
+    {
+        id: 'orel',
+        title: "Орел (1757)",
+        text: "Слобода Орел заснована на лівому березі Південного Бугу. Російська імперія цілеспрямовано будувала тут форпост для захисту від татарських набігів та поступової колонізації степу. Орел став центром сотні Новослобідського козацького полку."
+    },
+    {
+        id: 'holta',
+        title: "Голта (1762)",
+        text: "Ханська слобода Голта виникла на правому березі Південного Бугу. Османська імперія заклала це поселення для контролю над стратегічно важливою переправою. Територія формально належала Кримському ханству, васалу Османів."
+    },
+    {
+        id: 'bohopil',
+        title: "Богопіль (1763)",
+        text: "Реагуючи на активність сусідів, Річ Посполита закріплює свою присутність у межиріччі. За наказом графа Станіслава Потоцького тут закладається укріплений маєток Богопіль, який став митним та торговельним центром Брацлавського воєводства."
+    }
+];
+
+let currentTimelineStep = 0;
+let maxUnlockedStep = 0;
+
 // --- ГЕНЕРАТОР ХАТИНОК ---
 function generateHouses() {
-    // 1. Богопіль: перенесено між річками, ближче до устя (центр 380,360), радіус зменшено до 35
     scatterHouses('settlement-bohopil', 380, 360, 35, 22);
-    
-    // 2. Орел: перенесено на правий берег ближче до злиття (центр 580,320), радіус зменшено до 45
     scatterHouses('settlement-orel', 580, 320, 45, 50);
-    
-    // 3. Голта: підтягнуто трохи вище до річки (центр 510,460), радіус зменшено до 35
     scatterHouses('settlement-holta', 510, 460, 35, 30);
-
-    // Додаємо подію кліку для переходу на інші сторінки
-    document.querySelectorAll('.settlement-group').forEach(group => {
-        group.addEventListener('click', function() {
-            const url = this.getAttribute('data-url');
-            if (url) {
-                window.location.href = url;
-            }
-        });
-    });
 }
 
 function scatterHouses(groupId, cx, cy, radius, count) {
@@ -411,25 +417,107 @@ function scatterHouses(groupId, cx, cy, radius, count) {
 
     for (let i = 0; i < count; i++) {
         const angle = Math.random() * Math.PI * 2;
-        // Квадратний корінь потрібен, щоб хатинки скупчувались рівномірно, а не всі в самому центрі
         const r = Math.sqrt(Math.random()) * radius; 
         const x = cx + Math.cos(angle) * r;
         const y = cy + Math.sin(angle) * r;
 
-        // Використовуємо наш шаблон з HTML
         const useEl = document.createElementNS('http://www.w3.org/2000/svg', 'use');
         useEl.setAttribute('href', '#tiny-house');
         useEl.setAttribute('x', x);
         useEl.setAttribute('y', y);
         useEl.setAttribute('class', 'house-icon');
 
-        // Легко обертаємо кожну хатинку, щоб виглядало як природна забудова (від -20 до +20 градусів)
         const rotation = Math.random() * 40 - 20;
         useEl.setAttribute('transform', `rotate(${rotation} ${x} ${y})`);
-
         group.appendChild(useEl);
     }
 }
-
-// Запускаємо генератор відразу
 generateHouses();
+
+// --- ЛОГІКА ТАЙМЛАЙНУ ---
+function initTimeline() {
+    document.getElementById('bottom-timeline').classList.remove('hidden');
+    updateTimelineView();
+}
+
+function updateTimelineView() {
+    // 1. Оновлюємо стан поселень на мапі
+    historyData.forEach((data, index) => {
+        const settlement = document.getElementById(`settlement-${data.id}`);
+        if (index === currentTimelineStep) {
+            settlement.classList.remove('timeline-hidden'); // Показуємо активне
+        } else {
+            settlement.classList.add('timeline-hidden'); // Ховаємо інші
+        }
+    });
+
+    // 2. Оновлюємо вузли на нижній шкалі
+    const nodes = document.querySelectorAll('.timeline-node');
+    nodes.forEach((node, index) => {
+        node.classList.remove('active');
+        if (index === currentTimelineStep) node.classList.add('active');
+        
+        if (index <= maxUnlockedStep) {
+            node.classList.remove('locked');
+        }
+    });
+
+    // 3. Заповнюємо смугу прогресу
+    const progress = document.getElementById('timeline-progress');
+    progress.style.width = `${(currentTimelineStep / (historyData.length - 1)) * 100}%`;
+
+    // 4. Оновлюємо кнопку "Наступна подія"
+    const nextBtn = document.getElementById('next-event-btn');
+    if (currentTimelineStep === historyData.length - 1) {
+        nextBtn.disabled = true;
+    } else {
+        nextBtn.disabled = false;
+        // Якщо ми повернулись назад, але наступний крок вже відкритий
+        if (currentTimelineStep < maxUnlockedStep) {
+            nextBtn.textContent = "Вперед ➔";
+        } else {
+            nextBtn.textContent = "Наступна подія ➔";
+        }
+    }
+}
+
+// Кнопка "Наступна подія"
+document.getElementById('next-event-btn').addEventListener('click', () => {
+    if (currentTimelineStep < historyData.length - 1) {
+        currentTimelineStep++;
+        if (currentTimelineStep > maxUnlockedStep) {
+            maxUnlockedStep = currentTimelineStep;
+        }
+        updateTimelineView();
+    }
+});
+
+// Кліки по самих роках на таймлайні (навігація)
+document.querySelectorAll('.timeline-node').forEach(node => {
+    node.addEventListener('click', function() {
+        const index = parseInt(this.getAttribute('data-index'));
+        if (index <= maxUnlockedStep) {
+            currentTimelineStep = index;
+            updateTimelineView();
+        }
+    });
+});
+
+// --- ЛОГІКА СУВОЇВ ТА ДОВІДКИ ---
+document.querySelectorAll('.scroll-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+        e.stopPropagation(); // Щоб клік не йшов далі
+        const parentId = this.parentElement.getAttribute('data-id');
+        const data = historyData.find(d => d.id === parentId);
+        
+        if (data) {
+            document.getElementById('modal-title').textContent = data.title;
+            document.getElementById('modal-text').textContent = data.text;
+            document.getElementById('info-modal').classList.remove('hidden');
+        }
+    });
+});
+
+document.getElementById('close-modal').addEventListener('click', () => {
+    document.getElementById('info-modal').classList.add('hidden');
+});
