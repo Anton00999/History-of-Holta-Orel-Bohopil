@@ -573,3 +573,20 @@ body.panel-open #bottom-timeline {
     0% { transform: scale(0.9) skewX(-3deg); fill: #ff5722; filter: drop-shadow(0 0 5px #ff5722); }
     100% { transform: scale(1.1) skewX(3deg); fill: #ffeb3b; filter: drop-shadow(0 0 12px #ffeb3b); }
 }
+
+
+/* --- БЛОКУВАННЯ КЛІКІВ ДЛЯ ПРИХОВАНИХ ЕЛЕМЕНТІВ --- */
+
+/* 1. Забороняємо клікати на всю мапу, поки не завершилась майндмапа */
+#rivers-container:not(.show-rivers) {
+    pointer-events: none !important;
+}
+
+/* 2. Гарантовано вимикаємо кліки по будь-яких прихованих сувоях, групах та подіях */
+.hidden,
+.timeline-hidden,
+.scroll-btn.hidden {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
