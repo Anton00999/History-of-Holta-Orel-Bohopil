@@ -508,25 +508,27 @@ body.panel-open #bottom-timeline {
 #event-attack, 
 #event-attack-orel,
 #event-envoy,
-#event-smuggling {
+#event-smuggling,
+#event-fair {
     transition: opacity 0.5s ease;
 }
 
 #event-attack.timeline-hidden, 
 #event-attack-orel.timeline-hidden,
 #event-envoy.timeline-hidden,
-#event-smuggling.timeline-hidden {
+#event-smuggling.timeline-hidden,
+#event-fair.timeline-hidden {
     opacity: 0 !important; 
     visibility: hidden !important; 
     pointer-events: none !important;
 }
 
-/* Золота стрілка контрабанди */
-.smuggle-arrow {
+/* Золоті стрілки торгівлі та контрабанди */
+.smuggle-arrow,
+.trade-arrow {
     animation: moveArrow 1.5s linear infinite;
     filter: drop-shadow(0 0 5px rgba(249, 168, 38, 0.8));
 }
-
 /* Червона стрілка нападу */
 .attack-arrow {
     animation: moveArrow 1s linear infinite;
