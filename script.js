@@ -5,7 +5,7 @@ const zoomWrapper = document.getElementById('zoom-wrapper');
 const tooltip = document.getElementById('tooltip');
 
 // --- ЗВУКОВИЙ ЕФЕКТ ---
-const nodeSound = new Audio('sound1.mp3');
+const nodeSound = new Audio('sound1.mp3'); // Без папки sounds, як ти і просив
 nodeSound.volume = 0.4; 
 
 let tooltipTimeout; 
@@ -429,15 +429,20 @@ const historyData = [
         text: "Зліва від слободи Орел споруджується земляне укріплення бастіонного типу у формі шестикутної зірки. Цей шанець мав на меті посилити військову присутність імперії на кордоні та захистити стратегічну переправу через Південний Буг."
     },
     {
-        // ДОДАНО: Інформація про контрабанду
         id: 'smuggling',
         title: "Тіньова економіка Фронтиру (Лютий 1765)",
         text: "У лютому 1765 року кошовий отаман Запорозької Січі Петро Калнишевський через своїх підлеглих просив османського каймакана Голти пропустити придбані у Речі Посполитій товари (зокрема горілку) «без мита і платежу». Посадовці ворогуючих держав легко домовлялися, коли йшлося про їхні власні інтереси."
+    },
+    {
+        // ДОДАНО: Інформація про ярмарок
+        id: 'fair',
+        title: "Богопільський ярмарок (Червень 1767)",
+        text: "Попри політичні кордони та військові конфлікти, економіка вимагала свого. У червні 1767 року торговицький і богопольський губернатор Яків Усвяткевич офіційно запросив запорозьких торгівців на великий ярмарок до Богополя, гарантуючи їм повне звільнення від мита. Це ідеально демонструє прагматизм Фронтиру."
     }
 ];
 
-// ДОДАНО: 1765 рік події та розширено шкалу до 1768 року
-const milestones = [1756, 1757, 1759, 1761, 1762, 1763, 1763.9, 1764.5, 1765, 1768];
+// ДОДАНО: 1767 рік події
+const milestones = [1756, 1757, 1759, 1761, 1762, 1763, 1763.9, 1764.5, 1765, 1767, 1768];
 let currentMilestoneIndex = 0;
 
 // --- ГЕНЕРАТОР ДИНАМІЧНИХ ХАТИНОК ---
@@ -451,7 +456,6 @@ function scatterDynamicHouses(groupId, cx, cy, radius, startCount, startYear, pe
     const group = document.getElementById(groupId);
     if (!group) return;
 
-    // Генерація хат тепер працює аж до 1768 року
     const maxYear = 1768; 
     const totalYears = maxYear - startYear;
     const totalCount = startCount + (totalYears * perYearCount);
@@ -509,7 +513,8 @@ function focusCamera(id) {
         'bohopil': { x: '8%', y: '2%', scale: 1.3 }, 
         'attack': { x: '2%', y: '1%', scale: 1.4 }, 
         'fort': { x: '5%', y: '8%', scale: 1.3 }, 
-        'smuggling': { x: '-2%', y: '-8%', scale: 1.4 }, // ДОДАНО фокус для події контрабанди (спрямовано на Голту)
+        'smuggling': { x: '-2%', y: '-8%', scale: 1.4 }, 
+        'fair': { x: '8%', y: '2%', scale: 1.3 }, // Фокус на Богополі під час ярмарку
         'end': { x: '0%', y: '0%', scale: 1 } 
     };
     
@@ -540,9 +545,8 @@ function generateSliderMarkers() {
     
     markerContainer.innerHTML = '';
     const minYear = 1756; 
-    const maxYear = 1768; // ЗМІНЕНО: розтягнуто до 1768
+    const maxYear = 1768; 
     
-    // Встановлюємо нові межі для інпуту
     slider.min = minYear;
     slider.max = maxYear;
 
@@ -621,7 +625,8 @@ nextBtn.addEventListener('click', () => {
         else if (targetYear === 1763) idToOpen = 'bohopil';
         else if (targetYear === 1763.9) idToOpen = 'attack';
         else if (targetYear === 1764.5) idToOpen = 'fort';
-        else if (targetYear === 1765) idToOpen = 'smuggling'; // ДОДАНО
+        else if (targetYear === 1765) idToOpen = 'smuggling'; 
+        else if (targetYear === 1767) idToOpen = 'fair'; // ДОДАНО
         
         if (idToOpen) {
             openInfoPanel(idToOpen);
@@ -638,12 +643,13 @@ function updateTimelineView(currentYear) {
     processSettlement('orel', 1757, 1759, currentYear); 
     processSettlement('holta', 1762, 1763, currentYear);
     processSettlement('bohopil', 1763, 1763.9, currentYear);
-    processSettlement('fort', 1764.5, 1765, currentYear); // Сувій форту зникає в 1765
+    processSettlement('fort', 1764.5, 1765, currentYear); 
     
     processAttackEvent('envoy', 1759, 1761, currentYear); 
     processAttackEvent('attack-orel', 1761, 1762, currentYear); 
     processAttackEvent('attack', 1763.9, 1764.5, currentYear); 
-    processAttackEvent('smuggling', 1765, 1766, currentYear); // ДОДАНО: Контрабанда зникає в 1766
+    processAttackEvent('smuggling', 1765, 1767, currentYear); 
+    processAttackEvent('fair', 1767, 1769, currentYear); // ДОДАНО: Ярмарок до кінця таймлайну
     
     if (currentYear < 1757) {
         nextBtn.textContent = "Почати ➔";
