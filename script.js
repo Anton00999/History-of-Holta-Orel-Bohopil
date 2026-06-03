@@ -5,7 +5,7 @@ const zoomWrapper = document.getElementById('zoom-wrapper');
 const tooltip = document.getElementById('tooltip');
 
 // --- ЗВУКОВИЙ ЕФЕКТ ---
-const nodeSound = new Audio('sound1.mp3'); // Без папки sounds, як ти і просив
+const nodeSound = new Audio('sound1.mp3'); 
 nodeSound.volume = 0.4; 
 
 let tooltipTimeout; 
@@ -434,14 +434,18 @@ const historyData = [
         text: "У лютому 1765 року кошовий отаман Запорозької Січі Петро Калнишевський через своїх підлеглих просив османського каймакана Голти пропустити придбані у Речі Посполитій товари (зокрема горілку) «без мита і платежу». Посадовці ворогуючих держав легко домовлялися, коли йшлося про їхні власні інтереси."
     },
     {
-        // ДОДАНО: Інформація про ярмарок
         id: 'fair',
         title: "Богопільський ярмарок (Червень 1767)",
         text: "Попри політичні кордони та військові конфлікти, економіка вимагала свого. У червні 1767 року торговицький і богопольський губернатор Яків Усвяткевич офіційно запросив запорозьких торгівців на великий ярмарок до Богополя, гарантуючи їм повне звільнення від мита. Це ідеально демонструє прагматизм Фронтиру."
+    },
+    {
+        // ДОДАНО: Інформація про напад гайдамаків
+        id: 'haidamaky',
+        title: "Напад гайдамаків на Голту (Червень 1768)",
+        text: "21 червня 1768 року Голта була пограбована ватагою з 50-ти гайдамаків під проводом Івана. Повстанці вбили польського шляхтича та трьох місцевих євреїв, спаливши частину поселення. Злякавшись за своє життя, голтянський каймакан був змушений тікати під захист російських кордонів — у слободу Орел."
     }
 ];
 
-// ДОДАНО: 1767 рік події
 const milestones = [1756, 1757, 1759, 1761, 1762, 1763, 1763.9, 1764.5, 1765, 1767, 1768];
 let currentMilestoneIndex = 0;
 
@@ -483,6 +487,8 @@ function scatterDynamicHouses(groupId, cx, cy, radius, startCount, startYear, pe
             destroyYear = 1763.9;
         } else if (groupId === 'settlement-orel' && i < 20) {
             destroyYear = 1761; 
+        } else if (groupId === 'settlement-holta' && i < 5) { // ДОДАНО: Голта втрачає 5 хат
+            destroyYear = 1768;
         }
 
         useEl.dataset.appearYear = appearYear;
@@ -514,7 +520,8 @@ function focusCamera(id) {
         'attack': { x: '2%', y: '1%', scale: 1.4 }, 
         'fort': { x: '5%', y: '8%', scale: 1.3 }, 
         'smuggling': { x: '-2%', y: '-8%', scale: 1.4 }, 
-        'fair': { x: '8%', y: '2%', scale: 1.3 }, // Фокус на Богополі під час ярмарку
+        'fair': { x: '8%', y: '2%', scale: 1.3 }, 
+        'haidamaky': { x: '-2%', y: '-4%', scale: 1.4 }, // Фокус між Голтою та Орлом для атаки і втечі
         'end': { x: '0%', y: '0%', scale: 1 } 
     };
     
@@ -626,7 +633,8 @@ nextBtn.addEventListener('click', () => {
         else if (targetYear === 1763.9) idToOpen = 'attack';
         else if (targetYear === 1764.5) idToOpen = 'fort';
         else if (targetYear === 1765) idToOpen = 'smuggling'; 
-        else if (targetYear === 1767) idToOpen = 'fair'; // ДОДАНО
+        else if (targetYear === 1767) idToOpen = 'fair';
+        else if (targetYear === 1768) idToOpen = 'haidamaky'; // ДОДАНО
         
         if (idToOpen) {
             openInfoPanel(idToOpen);
@@ -649,7 +657,8 @@ function updateTimelineView(currentYear) {
     processAttackEvent('attack-orel', 1761, 1762, currentYear); 
     processAttackEvent('attack', 1763.9, 1764.5, currentYear); 
     processAttackEvent('smuggling', 1765, 1767, currentYear); 
-    processAttackEvent('fair', 1767, 1769, currentYear); // ДОДАНО: Ярмарок до кінця таймлайну
+    processAttackEvent('fair', 1767, 1768, currentYear); 
+    processAttackEvent('haidamaky', 1768, 1769, currentYear); // ДОДАНО: гайдамаки
     
     if (currentYear < 1757) {
         nextBtn.textContent = "Почати ➔";
