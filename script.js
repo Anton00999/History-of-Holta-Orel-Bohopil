@@ -737,6 +737,16 @@ function processAttackEvent(id, startYear, endYear, currentYear) {
 document.querySelectorAll('.scroll-btn').forEach(btn => {
     btn.addEventListener('click', function(e) {
         e.stopPropagation(); 
+        
+        // БРОНЬОВАНИЙ ЗАХИСТ ВІД ФАНТОМНИХ КЛІКІВ:
+        // 1. Перевіряємо, чи ми вже вийшли з майндмапи (чи з'явилися річки)
+        const rivers = document.getElementById('rivers-container');
+        if (!rivers.classList.contains('show-rivers')) return;
+
+        // 2. Перевіряємо, чи цей конкретний сувій (або його група) зараз прихований
+        if (this.classList.contains('hidden') || this.parentElement.classList.contains('timeline-hidden')) return;
+
+        // Якщо перевірки пройдені успішно — відкриваємо панель
         const parentId = this.parentElement.getAttribute('data-id');
         openInfoPanel(parentId);
         focusCamera(parentId); 
