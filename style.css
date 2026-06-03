@@ -491,17 +491,30 @@ body.panel-open #bottom-timeline {
 #modal-text { font-size: 1.1rem; line-height: 1.6; color: #e0e0e0; padding-bottom: 40px; }
 
 
-/* --- ТУЛТІПИ ДЛЯ МАЙНДМАПИ (НЕ ВИДАЛЯТИ!) --- */
+/* --- ТУЛТІПИ ДЛЯ МАЙНДМАПИ --- */
 .tooltip {
-    position: absolute; background: rgba(10, 10, 20, 0.95); border: 2px solid #e94560; border-radius: 8px; padding: 12px;
-    color: white; font-size: 0.95rem; pointer-events: none; opacity: 0; display: none; transition: opacity 0.3s;
-    z-index: 100; box-shadow: 0 10px 25px rgba(0,0,0,0.7); min-width: 220px;
+    position: absolute; 
+    background: rgba(10, 10, 20, 0.95); 
+    border: 2px solid #e94560; 
+    border-radius: 8px; 
+    padding: 15px;
+    color: #e0e0e0; 
+    font-size: 0.95rem; 
+    pointer-events: none; 
+    opacity: 0; 
+    display: none; 
+    transition: opacity 0.3s;
+    z-index: 100; 
+    box-shadow: 0 10px 25px rgba(0,0,0,0.7); 
+    
+    /* ДОДАНО: Правила для довгих текстів */
+    min-width: 220px;
+    max-width: 350px; /* Максимальна ширина віконця */
+    white-space: normal; /* Дозволяє тексту переноситися на нові рядки */
+    line-height: 1.5; /* Збільшений міжрядковий інтервал для зручного читання */
+    text-align: left;
 }
-.tooltip table { border-collapse: collapse; width: 100%; }
-.tooltip th, .tooltip td { padding: 6px 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); text-align: left; vertical-align: top; }
-.tooltip th { color: #e94560; font-weight: bold; width: 90px; }
-.tooltip td { color: #ccc; }
-.tooltip tr:last-child th, .tooltip tr:last-child td { border-bottom: none; }
+
 
 
 /* --- АНІМАЦІЇ ДЛЯ ПОДІЙ --- */
