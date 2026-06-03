@@ -310,16 +310,20 @@ function hideTooltipInstantly() {
 function setupTooltip(element, infoObj) {
     if (!infoObj || Object.keys(infoObj).length === 0) return;
 
+    // ЗМІНЕНО: Відфільтровуємо лише реальний текст (пропускаємо пусті пробіли)
+    const texts = Object.values(infoObj).filter(val => val.trim() !== "");
+    if (texts.length === 0) return; // Якщо тексту немає - тултіп не з'являтиметься взагалі
+
     element.addEventListener('mouseenter', (e) => {
         clearTimeout(tooltipTimeout); 
         
-        let tableHTML = '<table>';
-        for (const [key, value] of Object.entries(infoObj)) {
-            tableHTML += `<tr><th>${key}</th><td>${value}</td></tr>`;
-        }
-        tableHTML += '</table>';
+        // ЗМІНЕНО: Виводимо просто текст, без таблиць
+        let textContent = '';
+        texts.forEach(text => {
+            textContent += `<div>${text}</div>`;
+        });
         
-        tooltip.innerHTML = tableHTML;
+        tooltip.innerHTML = textContent;
         tooltip.style.display = 'block';
         
         setTimeout(() => { tooltip.style.opacity = '1'; }, 10);
@@ -439,7 +443,6 @@ const historyData = [
         text: "Попри політичні кордони та військові конфлікти, економіка вимагала свого. У червні 1767 року торговицький і богопольський губернатор Яків Усвяткевич офіційно запросив запорозьких торгівців на великий ярмарок до Богополя, гарантуючи їм повне звільнення від мита."
     },
     {
-        // ДОДАНО: Інформація про напад гайдамаків
         id: 'haidamaky',
         title: "Напад гайдамаків на Голту",
         text: "21 червня 1768 року Голта була пограбована ватагою з 50-ти гайдамаків під проводом Івана. Повстанці вбили польського шляхтича та трьох місцевих євреїв, спаливши частину поселення. Злякавшись за своє життя, голтянський каймакан був змушений тікати під захист російських кордонів — у слободу Орел."
@@ -487,7 +490,7 @@ function scatterDynamicHouses(groupId, cx, cy, radius, startCount, startYear, pe
             destroyYear = 1763.9;
         } else if (groupId === 'settlement-orel' && i < 20) {
             destroyYear = 1761; 
-        } else if (groupId === 'settlement-holta' && i < 5) { // ДОДАНО: Голта втрачає 5 хат
+        } else if (groupId === 'settlement-holta' && i < 5) {
             destroyYear = 1768;
         }
 
@@ -521,7 +524,7 @@ function focusCamera(id) {
         'fort': { x: '5%', y: '8%', scale: 1.3 }, 
         'smuggling': { x: '-2%', y: '-8%', scale: 1.4 }, 
         'fair': { x: '8%', y: '2%', scale: 1.3 }, 
-        'haidamaky': { x: '-2%', y: '-4%', scale: 1.4 }, // Фокус між Голтою та Орлом для атаки і втечі
+        'haidamaky': { x: '-2%', y: '-4%', scale: 1.4 }, 
         'end': { x: '0%', y: '0%', scale: 1 } 
     };
     
@@ -634,7 +637,7 @@ nextBtn.addEventListener('click', () => {
         else if (targetYear === 1764.5) idToOpen = 'fort';
         else if (targetYear === 1765) idToOpen = 'smuggling'; 
         else if (targetYear === 1767) idToOpen = 'fair';
-        else if (targetYear === 1768) idToOpen = 'haidamaky'; // ДОДАНО
+        else if (targetYear === 1768) idToOpen = 'haidamaky';
         
         if (idToOpen) {
             openInfoPanel(idToOpen);
@@ -658,7 +661,7 @@ function updateTimelineView(currentYear) {
     processAttackEvent('attack', 1763.9, 1764.5, currentYear); 
     processAttackEvent('smuggling', 1765, 1767, currentYear); 
     processAttackEvent('fair', 1767, 1768, currentYear); 
-    processAttackEvent('haidamaky', 1768, 1769, currentYear); // ДОДАНО: гайдамаки
+    processAttackEvent('haidamaky', 1768, 1769, currentYear); 
     
     if (currentYear < 1757) {
         nextBtn.textContent = "Почати ➔";
