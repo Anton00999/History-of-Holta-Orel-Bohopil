@@ -5,7 +5,7 @@ const zoomWrapper = document.getElementById('zoom-wrapper');
 const tooltip = document.getElementById('tooltip');
 
 // --- ЗВУКОВИЙ ЕФЕКТ ---
-const nodeSound = new Audio('sounds/sound1.mp3');
+const nodeSound = new Audio('sound1.mp3');
 nodeSound.volume = 0.4; 
 
 let tooltipTimeout; 
