@@ -4,6 +4,10 @@ const container = document.getElementById('mindmap-container');
 const zoomWrapper = document.getElementById('zoom-wrapper');
 const tooltip = document.getElementById('tooltip');
 
+// --- ЗВУКОВИЙ ЕФЕКТ ---
+const nodeSound = new Audio('sound1.mp3');
+nodeSound.volume = 0.4; // Гучність (можеш зробити більше або менше від 0.1 до 1.0)
+
 let tooltipTimeout; 
 let terminalNodes = []; 
 let terminalLinks = []; 
@@ -79,6 +83,11 @@ rootNode.addEventListener('click', (e) => {
     }
 
     if (rootNode.dataset.expanded === "true") return; 
+    
+    // ДОДАНО: Граємо базовий звук для центрального нода
+    nodeSound.currentTime = 0; 
+    nodeSound.playbackRate = 1.0; 
+    nodeSound.play();
     
     addPulseEffect(rootNode);
     rootNode.dataset.expanded = "true";
@@ -158,6 +167,11 @@ function spawnChildren(childrenArray, parentX, parentY, baseAngle, spreadAngle, 
 
         childEl.addEventListener('click', () => {
             if (childEl.dataset.expanded === "true") return;
+            
+            // ДОДАНО: Трюк з тональністю! Кожен новий вузол звучить трішки вище
+            nodeSound.currentTime = 0; 
+            nodeSound.playbackRate = 1.0 + (index * 0.15); // Збільшуємо висоту ноти
+            nodeSound.play();
             
             addPulseEffect(childEl);
             childEl.dataset.expanded = "true";
@@ -420,7 +434,6 @@ const historyData = [
     }
 ];
 
-// ДОДАНО: 1759 рік
 const milestones = [1756, 1757, 1759, 1761, 1762, 1763, 1763.9, 1764.5, 1765];
 let currentMilestoneIndex = 0;
 
@@ -486,7 +499,7 @@ function focusCamera(id) {
     const cameraPositions = {
         'start': { x: '0%', y: '0%', scale: 1 }, 
         'orel': { x: '-8%', y: '5%', scale: 1.3 }, 
-        'envoy': { x: '-5%', y: '0%', scale: 1.4 }, // Зсув для центрування між Голтою та Орлом
+        'envoy': { x: '-5%', y: '0%', scale: 1.4 }, 
         'attack-orel': { x: '-12%', y: '0%', scale: 1.4 }, 
         'holta': { x: '-2%', y: '-8%', scale: 1.3 }, 
         'bohopil': { x: '8%', y: '2%', scale: 1.3 }, 
@@ -593,7 +606,7 @@ nextBtn.addEventListener('click', () => {
 
         let idToOpen = null;
         if (targetYear === 1757) idToOpen = 'orel';
-        else if (targetYear === 1759) idToOpen = 'envoy'; // ДОДАНО
+        else if (targetYear === 1759) idToOpen = 'envoy';
         else if (targetYear === 1761) idToOpen = 'attack-orel'; 
         else if (targetYear === 1762) idToOpen = 'holta';
         else if (targetYear === 1763) idToOpen = 'bohopil';
@@ -612,16 +625,14 @@ nextBtn.addEventListener('click', () => {
 function updateTimelineView(currentYear) {
     yearDisplay.textContent = Math.floor(currentYear); 
 
-    // Сувій Орла тепер зникає у 1759, щоб не заважати посольству
     processSettlement('orel', 1757, 1759, currentYear); 
     processSettlement('holta', 1762, 1763, currentYear);
     processSettlement('bohopil', 1763, 1763.9, currentYear);
     processSettlement('fort', 1764.5, 1766, currentYear); 
     
-    // Відображення транзитних подій
-    processAttackEvent('envoy', 1759, 1761, currentYear); // Посольство
-    processAttackEvent('attack-orel', 1761, 1762, currentYear); // Напад Гарду
-    processAttackEvent('attack', 1763.9, 1764.5, currentYear); // Знищення Богополя
+    processAttackEvent('envoy', 1759, 1761, currentYear); 
+    processAttackEvent('attack-orel', 1761, 1762, currentYear); 
+    processAttackEvent('attack', 1763.9, 1764.5, currentYear); 
     
     if (currentYear < 1757) {
         nextBtn.textContent = "Почати ➔";
@@ -678,7 +689,6 @@ function processSettlement(id, startYear, endYear, currentYear) {
     }
 }
 
-// Функція тепер обробляє і напади, і мирні посольства (будь-які тимчасові події)
 function processAttackEvent(id, startYear, endYear, currentYear) {
     const attackGroup = document.getElementById(`event-${id}`);
     if (!attackGroup) return; 
