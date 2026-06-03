@@ -504,19 +504,27 @@ body.panel-open #bottom-timeline {
 .tooltip tr:last-child th, .tooltip tr:last-child td { border-bottom: none; }
 
 
-/* --- АНІМАЦІЇ ДЛЯ ПОДІЙ (Напади та Посольства) --- */
+/* --- АНІМАЦІЇ ДЛЯ ПОДІЙ --- */
 #event-attack, 
 #event-attack-orel,
-#event-envoy {
+#event-envoy,
+#event-smuggling {
     transition: opacity 0.5s ease;
 }
 
 #event-attack.timeline-hidden, 
 #event-attack-orel.timeline-hidden,
-#event-envoy.timeline-hidden {
+#event-envoy.timeline-hidden,
+#event-smuggling.timeline-hidden {
     opacity: 0 !important; 
     visibility: hidden !important; 
     pointer-events: none !important;
+}
+
+/* Золота стрілка контрабанди */
+.smuggle-arrow {
+    animation: moveArrow 1.5s linear infinite;
+    filter: drop-shadow(0 0 5px rgba(249, 168, 38, 0.8));
 }
 
 /* Червона стрілка нападу */
