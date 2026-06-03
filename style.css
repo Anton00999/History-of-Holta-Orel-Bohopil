@@ -509,7 +509,8 @@ body.panel-open #bottom-timeline {
 #event-attack-orel,
 #event-envoy,
 #event-smuggling,
-#event-fair {
+#event-fair,
+#event-haidamaky {
     transition: opacity 0.5s ease;
 }
 
@@ -517,7 +518,8 @@ body.panel-open #bottom-timeline {
 #event-attack-orel.timeline-hidden,
 #event-envoy.timeline-hidden,
 #event-smuggling.timeline-hidden,
-#event-fair.timeline-hidden {
+#event-fair.timeline-hidden,
+#event-haidamaky.timeline-hidden {
     opacity: 0 !important; 
     visibility: hidden !important; 
     pointer-events: none !important;
